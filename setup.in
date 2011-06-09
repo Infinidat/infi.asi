@@ -29,7 +29,11 @@ SETUP_INFO = dict(
     zip_safe = False,
 
     entry_points = dict(
+<<<<<<< HEAD
         console_scripts = ${project:console_scripts},
+=======
+        console_scripts = [],
+>>>>>>> initial project structure
         gui_scripts = []),
     )
 
