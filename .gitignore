@@ -1,0 +1,38 @@
+
+# generic
+*.tmp
+*.swp
+*.pyc
+*.pyo
+*.bak
+*.egg-info
+*.EGG-INFO
+.coverage
+.settings
+
+# eclipse
+.project
+.pydevproject
+
+# setuptools
+bin/
+build/
+dist/
+
+# buildout
+setup.py
+.installed*.cfg
+.cache/
+eggs/
+develop-eggs/
+parts/
+build/
+dist/
+src/infi/asi/__version__.py
+src/infi.asi.egg-info/
+
+# scm
+.bzr/
+.svn/
+.hg/
+
