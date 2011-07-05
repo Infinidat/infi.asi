@@ -3,6 +3,7 @@ from infi.asi.win32 import OSFile
 from infi.asi.cdb.inquiry import StandardInquiryData, StandardInquiryCommand
 from infi.exceptools import print_exc
 from ctypes import *
+from binascii import hexlify, unhexlify
 
 DeviceIoControl = windll.kernel32.DeviceIoControl
 GetLastError = windll.kernel32.GetLastError
@@ -22,7 +23,7 @@ SCSI_IOCTL_DATA_IN          = 1 # Read data from the device
 SCSI_IOCTL_DATA_UNSPECIFIED = 2 # No data is transferred
 
 class SCSIPassThroughDirect(Structure):
-#     _pack_ = 8
+    _pack_ = 1
     _fields_ = [
         # [in] sizeof(SCSI_PASS_THROUGH)
         ("Length", c_ushort),
@@ -40,8 +41,8 @@ class SCSIPassThroughDirect(Structure):
         ("SenseInfoLength", c_ubyte),
         # [in] One of: SCSI_IOCTL_DATA_IN, SCSI_IOCTL_DATA_OUT, SCSI_IOCTL_DATA_UNSPECIFIED
         ("DataIn", c_ubyte),
-        # [in/out] Size in bytes of the data buffer
         ("padding1", c_ubyte * 3),
+        # [in/out] Size in bytes of the data buffer
         ("DataTransferLength", c_ulong),
         # [in] Interval in seconds
         ("TimeOutValue", c_ulong),
@@ -68,7 +69,7 @@ try:
 
     data_buffer = create_string_buffer(96)
 
-    print("SPT length: %d" % (sizeof(SCSIPassThroughDirect) - SENSE_SIZE))
+    print("[!] SPT length: %d (%d)" % (sizeof(SCSIPassThroughDirect) - SENSE_SIZE, sizeof(SCSIPassThroughDirect)))
     spt = SCSIPassThroughDirect()
     spt.Length = sizeof(SCSIPassThroughDirect) - SENSE_SIZE
     spt.PathId = 0
@@ -85,7 +86,15 @@ try:
         spt.Cdb[i] = ord(cmd_str[i])
 
     bytes_returned = c_ulong()
-    if not DeviceIoControl(f.handle, IOCTL_SCSI_PASS_THROUGH_DIRECT, byref(spt), sizeof(spt), 0, 0, byref(bytes_returned), 0):
+    print("SCSI status before: %x" % spt.ScsiStatus)
+    if not DeviceIoControl(f.handle, IOCTL_SCSI_PASS_THROUGH_DIRECT, byref(spt), sizeof(spt),
+                           0, 0,
+                           byref(bytes_returned), 0):
         raise IOError("DeviceIoControl failed [errno=%d, errmsg=%s]" % (GetLastError(), errno_message(GetLastError())))
+    print("SCSI status after: %x" % spt.ScsiStatus)
+    print("DataTransferLength: %d" % (spt.DataTransferLength,))
+    print("bytes_returned: %d" % (bytes_returned.value,))
+    print("data buffer: %s (%s)" % (hexlify(data_buffer.raw), data_buffer.raw))
+    print("Sense buffer: %s" % hexlify(spt.sense_buffer))
 except:
     print_exc()
