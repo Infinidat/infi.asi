@@ -1,5 +1,20 @@
 from ctypes import *
-from . import CommandExecuter, SCSIReadCommand, SCSIWriteCommand
+from . import CommandExecuterBase, DEFAULT_MAX_QUEUE_SIZE, SCSIReadCommand, SCSIWriteCommand
+from .errors import AsiOSError
+
+class AsiWin32OSError(AsiOSError):
+    def __init__(self, errno, details=None):
+        buf = ctypes.create_string_buffer(1024)
+        FormatMessage(0x00001000, 0, errno & 0xFFFF, 0, buf, sizeof(buf), 0)
+        error_string = buf.value.strip()
+        
+        if details is not None:
+            message = "%s (win32 error %d: %s)" % (details, errno, error_string)
+        else:
+            message = "Win32 error %d: %s" % (errno, error_string)
+        super(AsiWin32OSError, self).__init__(error_string)
+        self.win32_errno = errno
+        self.win32_message = error_string
 
 kernel32 = windll.kernel32
 
@@ -8,6 +23,17 @@ DWORD WINAPI GetLastError(void);
 """
 GetLastError = kernel32.GetLastError
 
+"""
+DWORD WINAPI FormatMessage(
+  __in      DWORD dwFlags,
+  __in_opt  LPCVOID lpSource,
+  __in      DWORD dwMessageId,
+  __in      DWORD dwLanguageId,
+  __out     LPTSTR lpBuffer,
+  __in      DWORD nSize,
+  __in_opt  va_list *Arguments
+);
+"""
 FormatMessage = kernel32.FormatMessageA
 
 """
@@ -44,11 +70,6 @@ BOOL WINAPI CloseHandle(
 """
 CloseHandle = kernel32.CloseHandle
 
-def errno_message(errno):
-    buf = ctypes.create_string_buffer(1024)
-    FormatMessage(0x00001000, 0, errno & 0xFFFF, 0, buf, sizeof(buf), 0)
-    return buf.value.strip()
-
 class OSFile(object):
     GENERIC_READ    = 0x80000000L
     GENERIC_WRITE   = 0x40000000L
@@ -69,29 +90,24 @@ class OSFile(object):
     FILE_FLAG_OVERLAPPED = 0x40000000L
     
     def __init__(self, path, access, share, creation_disposition, flags=0):
+        self.path = path
         self.handle = CreateFile(path, access, share, 0, creation_disposition, flags, 0)
         if self.handle == -1:
-            raise self._io_error("CreateFile failed")
+            raise AsiWin32OSError(GetLastError(), "CreateFile for path %s failed" % path)
 
     def close(self):
         if self.handle == -1:
             return
         if not CloseHandle(self.handle):
-            raise self._io_error("CloseHandle failed")
+            raise AsiWin32OSError(GetLastError(), "CloseHandle for path %s failed" % self.path)
+        self.handle = -1
 
-    def ioctl(control_code, input, output_size):
-        output = create_string_buffer(output_size)
+    def ioctl(control_code, input, input_size, output=None, output_size=0):
         bytes_returned = c_ulong(0)
-        if not DeviceIoControl(self.handle, control_code, input, len(input), output, output_size, byref(bytes_returned),
-                               0):
-            raise self._io_error("DeviceIoControl failed")
-        return output.raw[0:bytes_returned.value]
-
-    def _io_error(self, message):
-        errno = GetLastError()
-        return IOError("%s [errno=%d, message=%d]" % (message, errno_message(errno)))
-
-
+        if not DeviceIoControl(self.handle, control_code, input, input_size, output or 0, output_size,
+                               byref(bytes_returned), 0):
+            raise AsiWin32OSError(GetLastError(), "DeviceIoControl %d for path %s failed" % (control_code, self.path))
+        return bytes_returned.value
 
 """
 Defined in the Windows DDK, under inc/api/ntddscsi.h
@@ -172,6 +188,8 @@ class SCSIPassThroughDirect(Structure):
         ("SenseInfoLength", c_ubyte),
         # [in] One of: SCSI_IOCTL_DATA_IN, SCSI_IOCTL_DATA_OUT, SCSI_IOCTL_DATA_UNSPECIFIED
         ("DataIn", c_ubyte),
+        # TODO: This is only for 32bit python, we need this for 64 bit as well.
+        ("padding1", c_ubyte * 3),
         # [in/out] Size in bytes of the data buffer
         ("DataTransferLength", c_ulong),
         # [in] Interval in seconds
@@ -185,84 +203,71 @@ class SCSIPassThroughDirect(Structure):
 
         # Our sense buffer
         ("sense_buffer", c_ubyte * SENSE_SIZE)
-   ]
+    ]
+
+    def set_data_buffer(self, buf):
+        if buf is not None:
+            self.data_buffer = buf
+            self.DataBuffer = cast(self.data_buffer, c_void_p)
+            self.DataTransferLength = sizeof(self.data_buffer)
+        else:
+            self.DataTransferLength = 0
+            self.DataBuffer = 0
+
+    def to_raw(self):
+        return self.source_buffer.raw
     
-DEFAULT_MAX_QUEUE_SIZE = 15
+    @classmethod
+    def create(cls, packet_index, command):
+        buf = create_string_buffer(sizeof(SCSIPassThroughDirect))
+        spt = SCSIPassThroughDirect.from_buffer(buf)
+        spt.source_buffer = buf
+        spt.packet_index = packet_index
+        spt.Length = sizeof(SCSIPassThroughDirect) - SENSE_SIZE
+        spt.PathId = 0
+        spt.TargetId = 0
+        spt.Lun = 0
+        spt.CdbLength = StandardInquiryCommand.sizeof()
+        spt.SenseInfoLength = SENSE_SIZE
+        spt.TimeOutValue = 10 # TODO: configurable
+        spt.SenseInfoOffset = sizeof(SCSIPassThroughDirect) - SENSE_SIZE
+        for i in xrange(len(command.command)):
+            spt.Cdb[i] = ord(command.command[i])
+
+        if isinstance(command, SCSIReadCommand):
+            if command.max_response_length > 0:
+                spt.DataIn = SCSI_IOCTL_DATA_IN
+                spt.set_data_buffer(create_string_buffer(command.max_response_length))
+            else:
+                spt.dxfer_direction = SCSI_IOCTL_DATA_UNSPECIFIED
+                spt.set_data_buffer(None)
+        else:
+            sgio.dxfer_direction = SCSI_IOCTL_DATA_OUT
+            sgio.set_data_buffer(create_string_buffer(command.data, len(command.data)))
 
 class Win32CommandExecuter(CommandExecuter):
     def __init__(self, io, max_queue_size=DEFAULT_MAX_QUEUE_SIZE):
-        super(CommandExecuter, self).__init__()
+        super(Win32CommandExecuter, self).__init__(max_queue_size)
         self.io = io
-        self.pending_packets = dict()
-        self.max_queue_size = max_queue_size
-        self.packet_index = 0
+        self.incoming_packets = []
 
-    def _next_packet_index(self):
-        if len(self.pending_packets) >= self.max_queue_size:
-            # TODO: exceptions
-            raise Exception("Too many packets are already pending.")
-        result = self.packet_index
-        self.packet_index = (self.packet_index + 1) % self.max_queue_size
-        return result
-    
-    def call(self, command):
-        result = []
-        def my_cb(data, exception):
-            result.append((data, exception))
+    def _os_prepare_to_send(self, command, packet_index):
+        return SCSIPassThroughDirect.create(packet_index, command)
+
+    def _os_send(self, os_data):
+        yield self.io.ioctl(IOCTL_SCSI_PASS_THROUGH_DIRECT,
+                            byref(os_data.source_buffer), sizeof(SCSIPassThroughDirect),
+                            byref(os_data.source_buffer), sizeof(SCSIPassThroughDirect))
+        self.incoming_packets.append(os_data)
         
-        yield self.send(command, callback=my_cb)
+    def _os_receive(self):
+        spt = self.incoming_packets.pop()
+        if spt.ScsiStatus != 0:
+            # TODO: check sense buffer.
+            yield (AsiSCSIError("SCSI response status is not zero: %d" % (spt.ScsiStatus,)), spt.packet_id)
 
-        while len(result) == 0:
-            yield self._process_pending_response()
-            
-        data, exception = result[0]
-        if exception is not None:
-            raise exception
-
-        yield data
-
-    def is_queue_full(self):
-        return len(self.pending_packets) >= self.max_queue_size
-
-    def is_queue_empty(self):
-        return len(self.pending_packets) == 0
-
-    def send(self, command, callback=None):
-        packet_index = self._next_packet_index()
-        
-        sgio = SGIO.create(packet_index, command)
-        
-        self.pending_packets[packet_index] = (sgio, callback)
-        
-        yield self.io.write(sgio.to_raw())
-
-    def wait(self):
-        while not self.is_queue_empty():
-            yield self._process_pending_response()
-
-    def _process_pending_response(self):
-        if self.is_queue_empty():
-            yield False
-
-        raw = yield self.io.read(sizeof(SGIO))
-        
-        response_sgio = SGIO.from_string(raw)
-
-        request_sgio, callback = self.pending_packets.pop(response_sgio.pack_id, (None, None))
-        if request_sgio is None:
-            # TODO: exceptions
-            raise Exception("Response doesn't appear in the pending I/O list.")
-
-        # TODO: check for errors.
-        exception = None
-        if response_sgio.status != 0:
-            exception = Exception("Response status is not zero.")
-            
         data = None
-        if request_sgio.dxfer_direction == SG_DXFER_FROM_DEV and request_sgio.dxfer_len != 0:
-            data = request_sgio.data_buffer.raw
-            
-        if callback is not None:
-            callback(data, exception)
-        
-        yield True
+        if spt.DataIn == SCSI_IOCTL_DATA_IN and spt.DataTransferLength != 0:
+            data = spt.data_buffer.raw[0:spt.DataTransferLength]
+
+        yield (data, packet_id)

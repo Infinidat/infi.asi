@@ -1,4 +1,5 @@
-from . import CommandExecuter, SCSIReadCommand, SCSIWriteCommand
+from . import CommandExecuterBase, DEFAULT_MAX_QUEUE_SIZE, SCSIReadCommand, SCSIWriteCommand
+from .errors import AsiSCSIError
 from ctypes import *
 
 """
@@ -110,7 +111,7 @@ class SGIO(Structure):
         self.cmd_len = sizeof(self.command_buffer)
         
     def set_data_buffer(self, buf):
-        if buffer is not None:
+        if buf is not None:
             self.data_buffer = buf
             self.dxferp = cast(self.data_buffer, c_void_p)
             self.dxfer_len = sizeof(self.data_buffer)
@@ -152,82 +153,31 @@ class SGIO(Structure):
         sgio.source_buffer = buf
         return sgio
 
-DEFAULT_MAX_QUEUE_SIZE = 15
-
-class LinuxCommandExecuter(CommandExecuter):
+class LinuxCommandExecuter(CommandExecuterBase):
     def __init__(self, io, max_queue_size=DEFAULT_MAX_QUEUE_SIZE):
-        super(CommandExecuter, self).__init__()
+        super(LinuxCommandExecuter, self).__init__(max_queue_size)
         self.io = io
-        self.pending_packets = dict()
-        self.max_queue_size = max_queue_size
-        self.packet_index = 0
 
-    def _next_packet_index(self):
-        if len(self.pending_packets) >= self.max_queue_size:
-            # TODO: exceptions
-            raise Exception("Too many packets are already pending.")
-        result = self.packet_index
-        self.packet_index = (self.packet_index + 1) % self.max_queue_size
-        return result
-    
-    def call(self, command):
-        result = []
-        def my_cb(data, exception):
-            result.append((data, exception))
-        
-        yield self.send(command, callback=my_cb)
+    def _os_prepare_to_send(self, command, packet_index):
+        return SGIO.create(packet_index, command)
 
-        while len(result) == 0:
-            yield self._process_pending_response()
-            
-        data, exception = result[0]
-        if exception is not None:
-            raise exception
+    def _os_send(self, os_data):
+        yield self.io.write(os_data.to_raw())
 
-        yield data
-
-    def is_queue_full(self):
-        return len(self.pending_packets) >= self.max_queue_size
-
-    def is_queue_empty(self):
-        return len(self.pending_packets) == 0
-
-    def send(self, command, callback=None):
-        packet_index = self._next_packet_index()
-        
-        sgio = SGIO.create(packet_index, command)
-        
-        self.pending_packets[packet_index] = (sgio, callback)
-        
-        yield self.io.write(sgio.to_raw())
-
-    def wait(self):
-        while not self.is_queue_empty():
-            yield self._process_pending_response()
-
-    def _process_pending_response(self):
-        if self.is_queue_empty():
-            yield False
-
+    def _os_receive(self):
         raw = yield self.io.read(sizeof(SGIO))
-        
+
         response_sgio = SGIO.from_string(raw)
 
-        request_sgio, callback = self.pending_packets.pop(response_sgio.pack_id, (None, None))
-        if request_sgio is None:
-            # TODO: exceptions
-            raise Exception("Response doesn't appear in the pending I/O list.")
+        packet_id = response_sgio.pack_id
 
-        # TODO: check for errors.
-        exception = None
         if response_sgio.status != 0:
-            exception = Exception("Response status is not zero.")
-            
+            # TODO: check sense buffer.
+            yield (AsiSCSIError("SCSI response status is not zero: %d" % (response_sgio.status,)), packet_id)
+
+        request_sgio = self._get_os_data(packet_id)
         data = None
         if request_sgio.dxfer_direction == SG_DXFER_FROM_DEV and request_sgio.dxfer_len != 0:
             data = request_sgio.data_buffer.raw
-            
-        if callback is not None:
-            callback(data, exception)
-        
-        yield True
+
+        yield (data, packet_id)
