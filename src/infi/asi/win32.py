@@ -257,7 +257,6 @@ class Win32CommandExecuter(CommandExecuterBase):
         return SCSIPassThroughDirect.create(packet_id, command)
 
     def _os_send(self, os_data):
-        print("SCSIPassThroughDirect.sizeof=%d" % (sizeof(SCSIPassThroughDirect) - SENSE_SIZE))
         yield self.io.ioctl(IOCTL_SCSI_PASS_THROUGH_DIRECT,
                             byref(os_data.source_buffer), sizeof(SCSIPassThroughDirect),
                             byref(os_data.source_buffer), sizeof(SCSIPassThroughDirect))
