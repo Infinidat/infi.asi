@@ -14,7 +14,7 @@ def errno_message(errno):
     FormatMessage(0x00001000, 0, errno & 0xFFFF, 0, buf, sizeof(buf), 0)
     return buf.value.strip()
 
-SENSE_SIZE = 0xFF
+SENSE_SIZE = 0x12
 
 IOCTL_SCSI_PASS_THROUGH_DIRECT = 0x0004D014L
 
@@ -68,7 +68,6 @@ try:
                OSFile.OPEN_EXISTING)
 
     data_buffer = create_string_buffer(96)
-
     print("[!] SPT length: %d (%d)" % (sizeof(SCSIPassThroughDirect) - SENSE_SIZE, sizeof(SCSIPassThroughDirect)))
     spt = SCSIPassThroughDirect()
     spt.Length = sizeof(SCSIPassThroughDirect) - SENSE_SIZE
@@ -88,7 +87,7 @@ try:
     bytes_returned = c_ulong()
     print("SCSI status before: %x" % spt.ScsiStatus)
     if not DeviceIoControl(f.handle, IOCTL_SCSI_PASS_THROUGH_DIRECT, byref(spt), sizeof(spt),
-                           0, 0,
+                           byref(spt), sizeof(spt),
                            byref(bytes_returned), 0):
         raise IOError("DeviceIoControl failed [errno=%d, errmsg=%s]" % (GetLastError(), errno_message(GetLastError())))
     print("SCSI status after: %x" % spt.ScsiStatus)

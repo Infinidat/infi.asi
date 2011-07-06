@@ -4,7 +4,7 @@ from .errors import AsiOSError
 
 class AsiWin32OSError(AsiOSError):
     def __init__(self, errno, details=None):
-        buf = ctypes.create_string_buffer(1024)
+        buf = create_string_buffer(1024)
         FormatMessage(0x00001000, 0, errno & 0xFFFF, 0, buf, sizeof(buf), 0)
         error_string = buf.value.strip()
         
@@ -102,7 +102,7 @@ class OSFile(object):
             raise AsiWin32OSError(GetLastError(), "CloseHandle for path %s failed" % self.path)
         self.handle = -1
 
-    def ioctl(control_code, input, input_size, output=None, output_size=0):
+    def ioctl(self, control_code, input, input_size, output=None, output_size=0):
         bytes_returned = c_ulong(0)
         if not DeviceIoControl(self.handle, control_code, input, input_size, output or 0, output_size,
                                byref(bytes_returned), 0):
@@ -171,6 +171,7 @@ SCSI_IOCTL_DATA_UNSPECIFIED = 2 # No data is transferred
 SENSE_SIZE = 0xFF
 
 class SCSIPassThroughDirect(Structure):
+    _pack_ = 1
     _fields_ = [
         # [in] sizeof(SCSI_PASS_THROUGH)
         ("Length", c_ushort),
@@ -218,16 +219,16 @@ class SCSIPassThroughDirect(Structure):
         return self.source_buffer.raw
     
     @classmethod
-    def create(cls, packet_index, command):
+    def create(cls, packet_id, command):
         buf = create_string_buffer(sizeof(SCSIPassThroughDirect))
         spt = SCSIPassThroughDirect.from_buffer(buf)
         spt.source_buffer = buf
-        spt.packet_index = packet_index
+        spt.packet_id = packet_id
         spt.Length = sizeof(SCSIPassThroughDirect) - SENSE_SIZE
         spt.PathId = 0
         spt.TargetId = 0
         spt.Lun = 0
-        spt.CdbLength = StandardInquiryCommand.sizeof()
+        spt.CdbLength = len(command.command)
         spt.SenseInfoLength = SENSE_SIZE
         spt.TimeOutValue = 10 # TODO: configurable
         spt.SenseInfoOffset = sizeof(SCSIPassThroughDirect) - SENSE_SIZE
@@ -244,17 +245,19 @@ class SCSIPassThroughDirect(Structure):
         else:
             sgio.dxfer_direction = SCSI_IOCTL_DATA_OUT
             sgio.set_data_buffer(create_string_buffer(command.data, len(command.data)))
+        return spt
 
-class Win32CommandExecuter(CommandExecuter):
+class Win32CommandExecuter(CommandExecuterBase):
     def __init__(self, io, max_queue_size=DEFAULT_MAX_QUEUE_SIZE):
         super(Win32CommandExecuter, self).__init__(max_queue_size)
         self.io = io
         self.incoming_packets = []
 
-    def _os_prepare_to_send(self, command, packet_index):
-        return SCSIPassThroughDirect.create(packet_index, command)
+    def _os_prepare_to_send(self, command, packet_id):
+        return SCSIPassThroughDirect.create(packet_id, command)
 
     def _os_send(self, os_data):
+        print("SCSIPassThroughDirect.sizeof=%d" % (sizeof(SCSIPassThroughDirect) - SENSE_SIZE))
         yield self.io.ioctl(IOCTL_SCSI_PASS_THROUGH_DIRECT,
                             byref(os_data.source_buffer), sizeof(SCSIPassThroughDirect),
                             byref(os_data.source_buffer), sizeof(SCSIPassThroughDirect))
@@ -270,4 +273,4 @@ class Win32CommandExecuter(CommandExecuter):
         if spt.DataIn == SCSI_IOCTL_DATA_IN and spt.DataTransferLength != 0:
             data = spt.data_buffer.raw[0:spt.DataTransferLength]
 
-        yield (data, packet_id)
+        yield (data, spt.packet_id)

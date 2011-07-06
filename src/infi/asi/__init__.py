@@ -1,6 +1,8 @@
 __import__("pkg_resources").declare_namespace(__name__)
 
+import platform
 import functools
+from .errors import AsiException
 
 class SCSICommand(object):
     def __init__(self, command):
@@ -150,9 +152,14 @@ class CommandExecuterAdapter(CommandExecuter):
         return self.call_wrapper(self.executer.wait)
 
 def create_platform_command_executer(*args, **kwargs):
-    # TODO: per-OS
-    from .linux import LinuxCommandExecuter
-    return LinuxCommandExecuter(*args, **kwargs)
+    system = platform.system()
+    if system == 'Windows':
+        from .win32 import Win32CommandExecuter
+        return Win32CommandExecuter(*args, **kwargs)
+    elif system == 'Linux':
+        from .linux import LinuxCommandExecuter
+        return LinuxCommandExecuter(*args, **kwargs)
+    raise AsiException("Platform %s is not yet supported." % system)
 
 def create_sync_command_executer(*args, **kwargs):
     from .coroutines.sync_adapter import sync_call
