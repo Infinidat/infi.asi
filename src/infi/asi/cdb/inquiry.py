@@ -9,26 +9,26 @@ CDB_OPCODE_INQUIRY = 0x12
 
 class StandardInquiryExtendedData(Struct):
     _fields_ = [
-        String("vendor_specific", 20), 
+        FixedSizeString("vendor_specific", 20),
         BitFields(BitPadding(5), # reserved
                   Flag("ius"), # SPC-5 specific
                   Flag("qas"), # SPC-5 specific
                   Flag("clocking") # SPC-5 specific
         ),
         Padding(1), # reserved
-        String("version_descriptors", 16),
+        FixedSizeString("version_descriptors", 16),
         Padding(22)
     ]
 
 class StandardInquiryData(Struct):
     def _is_extended_data_exist(self, stream):
         return self.additional_length >= StandardInquiryExtendedData.sizeof()
-    
+
     _fields_ = [
         Lazy(
             BitFields(
-                BitField("peripheral_device_type", 5),  # 0-4
-                BitField("peripheral_qualifier", 3),    # 5-7
+                BitField("peripheral_device_type", 5), # 0-4
+                BitField("peripheral_qualifier", 3), # 5-7
             ),
             BitFields(
                 BitPadding(7),
@@ -39,7 +39,7 @@ class StandardInquiryData(Struct):
                 BitField("response_data_format", 4),
                 Flag("hisup"),
                 Flag("normaca"),
-                BitPadding(2),      # 6-7: obsolete
+                BitPadding(2), # 6-7: obsolete
             ),
             UBInt8("additional_length"),
             BitFields(
@@ -62,9 +62,9 @@ class StandardInquiryData(Struct):
                       BitPadding(2), # obsolete
                       Flag("cmd_que"),
                       Flag("vs")),
-            String("t10_vendor_identification", 8),
-            String("product_identification", 16),
-            String("product_revision_level", 4),
+            FixedSizeString("t10_vendor_identification", 8),
+            FixedSizeString("product_identification", 16),
+            FixedSizeString("product_revision_level", 4),
         ),
         OptionalField("extended", StandardInquiryExtendedData, _is_extended_data_exist)
    ]
@@ -96,5 +96,5 @@ class StandardInquiryCommand(InquiryCommand):
         result_datagram = yield executer.call(SCSIReadCommand(datagram, self.allocation_length))
 
         standard_inquiry_data = StandardInquiryData.create_instance_from_string(result_datagram)
-        
+
         yield standard_inquiry_data

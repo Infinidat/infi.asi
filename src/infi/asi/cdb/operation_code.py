@@ -6,7 +6,13 @@ class OperationCode(Struct):
         BitField("command_code", 5),
         BitField("group_code", 3)
     )
-    
+
+    def __init__(self, opcode=None):
+        super(OperationCode, self).__init__()
+        if opcode is not None:
+            self.command_code = opcode & 0x1f
+            self.group_code = opcode >> 5
+
     COMMAND_SIZE_BY_GROUP_CODE = dict([
         [ 0, 6 ],
         [ 1, 10 ],

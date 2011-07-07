@@ -1,13 +1,13 @@
 from ctypes import *
 from . import CommandExecuterBase, DEFAULT_MAX_QUEUE_SIZE, SCSIReadCommand, SCSIWriteCommand
-from .errors import AsiOSError
+from .errors import AsiOSError, AsiSCSIError
 
 class AsiWin32OSError(AsiOSError):
     def __init__(self, errno, details=None):
         buf = create_string_buffer(1024)
         FormatMessage(0x00001000, 0, errno & 0xFFFF, 0, buf, sizeof(buf), 0)
         error_string = buf.value.strip()
-        
+
         if details is not None:
             message = "%s (win32 error %d: %s)" % (details, errno, error_string)
         else:
@@ -71,24 +71,24 @@ BOOL WINAPI CloseHandle(
 CloseHandle = kernel32.CloseHandle
 
 class OSFile(object):
-    GENERIC_READ    = 0x80000000L
-    GENERIC_WRITE   = 0x40000000L
+    GENERIC_READ = 0x80000000L
+    GENERIC_WRITE = 0x40000000L
     GENERIC_EXECUTE = 0x20000000L
-    GENERIC_ALL     = 0x10000000L
-    
-    FILE_SHARE_READ   = 0x00000001
-    FILE_SHARE_WRITE  = 0x00000002
-    FILE_SHARE_NONE   = 0x00000000
+    GENERIC_ALL = 0x10000000L
+
+    FILE_SHARE_READ = 0x00000001
+    FILE_SHARE_WRITE = 0x00000002
+    FILE_SHARE_NONE = 0x00000000
     FILE_SHARE_DELETE = 0x00000004
 
-    CREATE_NEW        = 1
-    CREATE_ALWAYS     = 2
-    OPEN_EXISTING     = 3
-    OPEN_ALWAYS       = 4
+    CREATE_NEW = 1
+    CREATE_ALWAYS = 2
+    OPEN_EXISTING = 3
+    OPEN_ALWAYS = 4
     TRUNCATE_EXISTING = 5
 
     FILE_FLAG_OVERLAPPED = 0x40000000L
-    
+
     def __init__(self, path, access, share, creation_disposition, flags=0):
         self.path = path
         self.handle = CreateFile(path, access, share, 0, creation_disposition, flags, 0)
@@ -139,6 +139,7 @@ typedef struct _SCSI_PASS_THROUGH_DIRECT {
     UCHAR DataIn;
     ULONG DataTransferLength;
     ULONG TimeOutValue;
+    
     PVOID DataBuffer;
     ULONG SenseInfoOffset;
     UCHAR Cdb[16];
@@ -164,11 +165,15 @@ typedef struct _SCSI_PASS_THROUGH_DIRECT {
 """
 IOCTL_SCSI_PASS_THROUGH_DIRECT = 0x0004D014L
 
-SCSI_IOCTL_DATA_OUT         = 0 # Write data to the device 
-SCSI_IOCTL_DATA_IN          = 1 # Read data from the device
+SCSI_IOCTL_DATA_OUT = 0 # Write data to the device 
+SCSI_IOCTL_DATA_IN = 1 # Read data from the device
 SCSI_IOCTL_DATA_UNSPECIFIED = 2 # No data is transferred
 
 SENSE_SIZE = 0xFF
+
+def is_python_64bit():
+    from sys import maxsize
+    return maxsize > 2 ** 32
 
 class SCSIPassThroughDirect(Structure):
     _pack_ = 1
@@ -196,11 +201,13 @@ class SCSIPassThroughDirect(Structure):
         # [in] Interval in seconds
         ("TimeOutValue", c_ulong),
         # [in] Pointer to the data buffer
+        ("padding2", c_ubyte * (4 if is_python_64bit() else 0)),
         ("DataBuffer", c_void_p),
         # [in] Offset from the beginning of the structure to the request-sense buffer
         ("SenseInfoOffset", c_ulong),
         # [in] CDB to send to the target device
         ("Cdb", c_ubyte * 16),
+        ("padding3", c_ubyte * (4 if is_python_64bit() else 0)),
 
         # Our sense buffer
         ("sense_buffer", c_ubyte * SENSE_SIZE)
@@ -217,7 +224,7 @@ class SCSIPassThroughDirect(Structure):
 
     def to_raw(self):
         return self.source_buffer.raw
-    
+
     @classmethod
     def create(cls, packet_id, command):
         buf = create_string_buffer(sizeof(SCSIPassThroughDirect))
@@ -261,7 +268,7 @@ class Win32CommandExecuter(CommandExecuterBase):
                             byref(os_data.source_buffer), sizeof(SCSIPassThroughDirect),
                             byref(os_data.source_buffer), sizeof(SCSIPassThroughDirect))
         self.incoming_packets.append(os_data)
-        
+
     def _os_receive(self):
         spt = self.incoming_packets.pop()
         if spt.ScsiStatus != 0:

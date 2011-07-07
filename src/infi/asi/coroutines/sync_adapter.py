@@ -22,5 +22,7 @@ def sync_wait(generator):
             stack.pop()
         except BaseException, e:
             stack.pop()
+            if len(stack) == 0:
+                raise
             args = e
     return result
