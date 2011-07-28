@@ -14,10 +14,7 @@ path, offset, length, cdb_size = (sys.argv[1], int(sys.argv[2]),
 
 if platform.system() == 'Windows':
     from infi.asi.win32 import OSFile
-    f = OSFile(path,
-               OSFile.GENERIC_READ | OSFile.GENERIC_WRITE,
-               OSFile.FILE_SHARE_READ | OSFile.FILE_SHARE_WRITE,
-               OSFile.OPEN_EXISTING)
+    f = OSFile(path)
 else:
     import os
     from infi.asi.unix import OSFile

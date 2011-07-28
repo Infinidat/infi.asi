@@ -15,10 +15,7 @@ path = sys.argv[1]
 
 if platform.system() == 'Windows':
     from infi.asi.win32 import OSFile
-    f = OSFile(path,
-               OSFile.GENERIC_READ | OSFile.GENERIC_WRITE,
-               OSFile.FILE_SHARE_READ | OSFile.FILE_SHARE_WRITE,
-               OSFile.OPEN_EXISTING)
+    f = OSFile(path)
 else:
     import os
     from infi.asi.unix import OSFile
