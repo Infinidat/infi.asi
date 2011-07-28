@@ -10,7 +10,7 @@ CDB_OPCODE = 0x00
 
 class TestUnitReadyCommand(CDB):
     _fields_ = [
-        ConstField("opcode", OperationCode(command_code=CDB_OPCODE, group_code=0)),
+        ConstField("opcode", OperationCode(opcode=CDB_OPCODE)),
         Padding(4),
         Field("control", Control, DEFAULT_CONTROL)
     ]

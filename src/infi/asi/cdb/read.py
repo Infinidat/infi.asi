@@ -71,8 +71,6 @@ class Read10Command(CDB):
         assert self.logical_block_address < 2 ** 32
         assert self.transfer_length < 2 ** 16
         datagram = self.create_datagram()
-        import binascii
-        print binascii.hexlify(datagram)
         result_datagram = yield executer.call(SCSIReadCommand(datagram, self.block_size * self.transfer_length))
 
         yield result_datagram

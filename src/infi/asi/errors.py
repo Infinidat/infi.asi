@@ -1,3 +1,5 @@
+from binascii import hexlify
+
 from infi.exceptools import InfiException
 
 class AsiException(InfiException):
@@ -8,6 +10,13 @@ class AsiOSError(AsiException):
 
 class AsiSCSIError(AsiException):
     pass
+
+class AsiCheckConditionError(AsiSCSIError):
+    def __init__(self, sense_buffer, sense_obj):
+        super(AsiCheckConditionError, self).__init__("SCSI Check Condition status, sense %s [%s]" %
+                                                     (repr(sense_obj), hexlify(sense_buffer)))
+        self.sense_buffer = sense_buffer
+        self.sense_obj = sense_obj
 
 class AsiRequestQueueFullError(AsiException):
     def __init__(self):

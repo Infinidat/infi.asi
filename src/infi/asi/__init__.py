@@ -1,9 +1,23 @@
 __import__("pkg_resources").declare_namespace(__name__)
 
 import platform
-import functools
-from .errors import AsiException
 
+from infi.instruct import *
+
+from .errors import AsiException, AsiCheckConditionError
+from .sense import *
+
+SCSI_STATUS_GOOD                 = 0x00
+SCSI_STATUS_CHECK_CONDITION      = 0x02
+SCSI_STATUS_CONDITION_MET        = 0x04
+SCSI_STATUS_BUSY                 = 0x08
+SCSI_STATUS_RESERVATION_CONFLICT = 0x18
+SCSI_STATUS_TASK_SET_FULL        = 0x28
+SCSI_STATUS_ACA_ACTIVE           = 0x30
+SCSI_STATUS_TASK_ABORTED         = 0x40
+
+DEFAULT_MAX_QUEUE_SIZE = 15
+    
 class SCSICommand(object):
     def __init__(self, command):
         super(SCSICommand, self).__init__()
@@ -31,8 +45,6 @@ class CommandExecuter(object):
 
     def wait(self):
         raise NotImplementedError()
-
-DEFAULT_MAX_QUEUE_SIZE = 15
 
 class CommandExecuterBase(CommandExecuter):
     def __init__(self, max_queue_size=DEFAULT_MAX_QUEUE_SIZE):
@@ -97,7 +109,7 @@ class CommandExecuterBase(CommandExecuter):
             raise AsiInternalError("SCSI response doesn't appear in the pending I/O list.")
 
         if isinstance(result, Exception):
-            callback(None, exception)
+            callback(None, result)
         else:
             callback(result, None)
         
@@ -117,21 +129,20 @@ class CommandExecuterBase(CommandExecuter):
     def _os_receive(self):
         """Returns the raw packet or an exception and packet_id as a pair: (packet, packet_id)"""
         raise NotImplementedError()
+
+    def _check_condition(self, buf):
+        response_code = SCSISenseResponseCode.create_from_string(buf)
+        # spc4r30 4.5:
+        if response_code.code in (0x72, 0x73):
+            sense = SCSISenseDataFixed.create_from_string(buf)
+        elif response_code.code in (0x70, 0x71):
+            sense = SCSISenseDataDescriptorBased.create_from_string(buf)
+        else:
+            sense = None
+        return AsiCheckConditionError(buf, sense)
     
 # TODO: maybe add a ReactorCommandExecuter that also adds a "register_response_listener()" that automatically reads
 # the responses and calls a callback.
-
-class Asi(object):
-    def __init__(self, executer, call_wrapper):
-        from .cdb.inquiry import standard_inquiry
-        
-        self.executer = executer
-        self.call_wrapper = call_wrapper
-        
-        self.call = functools.partial(call_wrapper, self.executer.call)
-        self.send = functools.partial(call_wrapper, self.executer.send)
-        self.wait = functools.partial(call_wrapper, self.executer.wait)
-        self.standard_inquiry = functools.partial(call_wrapper, functools.partial(standard_inquiry, self.executer))
 
 class CommandExecuterAdapter(CommandExecuter):
     def __init__(self, executer, call_wrapper):
@@ -160,21 +171,3 @@ def create_platform_command_executer(*args, **kwargs):
         from .linux import LinuxCommandExecuter
         return LinuxCommandExecuter(*args, **kwargs)
     raise AsiException("Platform %s is not yet supported." % system)
-
-def create_sync_command_executer(*args, **kwargs):
-    from .coroutines.sync_adapter import sync_call
-    return CommandExecuterAdapter(create_platform_command_executer(*args, **kwargs), sync_call)
-
-def create_microactor_command_executer(*args, **kwargs):
-    from .coroutines.microactor_adapter import microactor_call
-    return CommandExecuterAdapter(create_platform_command_executer(*args, **kwargs), microactor_call)
-
-def create_sync_asi(io):
-    from .coroutines.sync_adapter import sync_call
-    executer = create_sync_command_executer(io)
-    return Asi(executer, sync_call)
-
-def create_microactor_asi(io):
-    from .coroutines.microactor_adapter import microactor_call
-    executer = create_microactor_command_executer(io)
-    return Asi(executer, microactor_call)

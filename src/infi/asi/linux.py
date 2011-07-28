@@ -1,4 +1,5 @@
 from . import CommandExecuterBase, DEFAULT_MAX_QUEUE_SIZE, SCSIReadCommand, SCSIWriteCommand
+from . import SCSI_STATUS_CHECK_CONDITION
 from .errors import AsiSCSIError
 from ctypes import *
 
@@ -170,12 +171,16 @@ class LinuxCommandExecuter(CommandExecuterBase):
         response_sgio = SGIO.from_string(raw)
 
         packet_id = response_sgio.pack_id
+        request_sgio = self._get_os_data(packet_id)
 
         if response_sgio.status != 0:
-            # TODO: check sense buffer.
-            yield (AsiSCSIError("SCSI response status is not zero: %d" % (response_sgio.status,)), packet_id)
+            if (response_sgio.status & SCSI_STATUS_CHECK_CONDITION) != 0:
+                yield (self._check_condition(string_at(response_sgio.sbp, SENSE_SIZE)), packet_id)
+                raise StopIteration()
+            
+            yield (AsiSCSIError("SCSI response status is not zero: 0x%02x" % (response_sgio.status,)), packet_id)
+            raise StopIteration()
 
-        request_sgio = self._get_os_data(packet_id)
         data = None
         if request_sgio.dxfer_direction == SG_DXFER_FROM_DEV and request_sgio.dxfer_len != 0:
             data = request_sgio.data_buffer.raw
