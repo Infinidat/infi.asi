@@ -20,16 +20,21 @@ class StandardInquiryExtendedData(Struct):
         Padding(22)
     ]
 
+class PeripheralDevice(Struct):
+    _fields_ = [
+        BitFields(
+            BitField("type", 5), # 0-4
+            BitField("qualifier", 3), # 5-7
+        )
+    ]
+
 class StandardInquiryData(Struct):
     def _is_extended_data_exist(self, stream):
         return self.additional_length >= StandardInquiryExtendedData.sizeof()
 
     _fields_ = [
         Lazy(
-            BitFields(
-                BitField("peripheral_device_type", 5), # 0-4
-                BitField("peripheral_qualifier", 3), # 5-7
-            ),
+            Field("peripheral_device", PeripheralDevice),
             BitFields(
                 BitPadding(7),
                 Flag("rmb"),
@@ -69,11 +74,18 @@ class StandardInquiryData(Struct):
         OptionalField("extended", StandardInquiryExtendedData, _is_extended_data_exist)
    ]
 
-StandardInquiryDataLength = StandardInquiryData.min_sizeof() + StandardInquiryExtendedData.sizeof()
+StandardInquiryDataLength = StandardInquiryData.min_max_sizeof().min + StandardInquiryExtendedData.sizeof()
+
+class SupportedVPDPagesData(Struct):
+    _fields_ = [
+        Field("peripheral_device", PeripheralDevice),
+        UBInt8("page_code"),
+        Field("vpd_parameters", SumSizeArray(UBInt16, UBInt8))
+    ]    
 
 class InquiryCommand(CDB):
     _fields_ = [
-        ConstField("opcode", OperationCode(command_code=CDB_OPCODE_INQUIRY, group_code=0)),
+        ConstField("opcode", OperationCode(opcode=CDB_OPCODE_INQUIRY)),
         BitFields(
             Flag("evpd", default=0),
             BitPadding(7)
@@ -86,15 +98,46 @@ class InquiryCommand(CDB):
 
 class StandardInquiryCommand(InquiryCommand):
     def __init__(self):
-        super(StandardInquiryCommand, self).__init__()
-        self.page_code = 0
-        self.allocation_length = StandardInquiryDataLength
+        super(StandardInquiryCommand, self).__init__(page_code=0, evpd=0, allocation_length=StandardInquiryDataLength)
 
     def execute(self, executer):
         datagram = self.create_datagram()
-
         result_datagram = yield executer.call(SCSIReadCommand(datagram, self.allocation_length))
-
         standard_inquiry_data = StandardInquiryData.create_instance_from_string(result_datagram)
 
         yield standard_inquiry_data
+
+class EVPDInquiryCommand(InquiryCommand):
+    def __init__(self, page_code, allocation_length, result_class):
+        super(EVPDInquiryCommand, self).__init__(page_code, evpd=1, allocation_length=allocation_length)
+        self.result_class = result_class
+
+    def execute(self, executer):
+        datagram = self.create_datagram()
+        result_datagram = yield executer.call(SCSIReadCommand(datagram, self.allocation_length))
+        result = result_class.create_from_string(result_datagram)
+
+        yield result
+
+# spc4r30: 7.82 (page 606)
+class SupportedVPDPagesCommand(EVPDInquiryCommand):
+    def __init__(self):
+        super(SupportedVPDPagesCommand, self).__init__(0x00, 256, SupportedVPDPagesData)
+        
+# spc4r30: 7.8.15 (page 641)
+class UnitSerialNumberVPDPageData(Struct):
+    _fields_ = [
+        Field("peripheral_device", PeripheralDevice),
+        UBInt8("page_code"),
+        UBInt16("page_length"),
+
+        # TODO: finish this
+   ]
+
+INQUIRY_PAGE_SUPPORTED_VPD_PAGES = 0x00
+INQUIRY_PAGE_UNIT_SERIAL_NUMBER = 0x80
+INQUIRY_PAGE_DEVICE_IDENTIFICATION = 0x83
+
+SUPPORTED_VPD_PAGES_COMMANDS = {
+    INQUIRY_PAGE_SUPPORTED_VPD_PAGES: SupportedVPDPagesInquiryCommand
+}
