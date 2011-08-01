@@ -47,7 +47,7 @@ HANDLE WINAPI CreateFile(
   __in_opt  HANDLE hTemplateFile
 );
 """
-CreateFile = kernel32.CreateFileA
+CreateFile = kernel32.CreateFileW
 
 """
 BOOL WINAPI DeviceIoControl(

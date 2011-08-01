@@ -3,6 +3,7 @@ from .. import SCSIReadCommand
 from .operation_code import OperationCode
 from .control import Control, DEFAULT_CONTROL
 from infi.instruct import *
+from infi.instruct.macros import VarSizeBuffer
 
 # spc4r30: 6.4.1 (page 259)
 CDB_OPCODE_INQUIRY = 0x12
@@ -29,8 +30,8 @@ class PeripheralDevice(Struct):
     ]
 
 class StandardInquiryData(Struct):
-    def _is_extended_data_exist(self, stream):
-        return self.additional_length >= StandardInquiryExtendedData.sizeof()
+    def _is_extended_data_exist(self, stream, context):
+        return self.additional_length >= StandardInquiryExtendedData.min_max_sizeof().max
 
     _fields_ = [
         Lazy(
@@ -74,14 +75,14 @@ class StandardInquiryData(Struct):
         OptionalField("extended", StandardInquiryExtendedData, _is_extended_data_exist)
    ]
 
-StandardInquiryDataLength = StandardInquiryData.min_max_sizeof().min + StandardInquiryExtendedData.sizeof()
+StandardInquiryDataLength = StandardInquiryData.min_max_sizeof().min + StandardInquiryExtendedData.min_max_sizeof().max
 
 class SupportedVPDPagesData(Struct):
     _fields_ = [
         Field("peripheral_device", PeripheralDevice),
         UBInt8("page_code"),
-        Field("vpd_parameters", SumSizeArray(UBInt16, UBInt8))
-    ]    
+        SumSizeArray("vpd_parameters", UBInt16, UBInt8)
+    ]
 
 class InquiryCommand(CDB):
     _fields_ = [
@@ -97,8 +98,9 @@ class InquiryCommand(CDB):
     ]
 
 class StandardInquiryCommand(InquiryCommand):
-    def __init__(self):
-        super(StandardInquiryCommand, self).__init__(page_code=0, evpd=0, allocation_length=StandardInquiryDataLength)
+    def __init__(self, page_code=0, evpd=0, allocation_length=StandardInquiryDataLength):
+        super(StandardInquiryCommand, self).__init__(page_code=page_code, evpd=evpd,
+                                                     allocation_length=allocation_length)
 
     def execute(self, executer):
         datagram = self.create_datagram()
@@ -108,36 +110,39 @@ class StandardInquiryCommand(InquiryCommand):
         yield standard_inquiry_data
 
 class EVPDInquiryCommand(InquiryCommand):
+
     def __init__(self, page_code, allocation_length, result_class):
-        super(EVPDInquiryCommand, self).__init__(page_code, evpd=1, allocation_length=allocation_length)
+        super(EVPDInquiryCommand, self).__init__(page_code=page_code, evpd=1, allocation_length=allocation_length)
         self.result_class = result_class
 
     def execute(self, executer):
         datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIReadCommand(datagram, self.allocation_length))
-        result = result_class.create_from_string(result_datagram)
-
+        result = self.result_class.create_from_string(result_datagram)
         yield result
 
 # spc4r30: 7.82 (page 606)
 class SupportedVPDPagesCommand(EVPDInquiryCommand):
     def __init__(self):
-        super(SupportedVPDPagesCommand, self).__init__(0x00, 256, SupportedVPDPagesData)
-        
+        super(SupportedVPDPagesCommand, self).__init__(0x00, 255, SupportedVPDPagesData)
+
 # spc4r30: 7.8.15 (page 641)
 class UnitSerialNumberVPDPageData(Struct):
     _fields_ = [
         Field("peripheral_device", PeripheralDevice),
         UBInt8("page_code"),
-        UBInt16("page_length"),
-
-        # TODO: finish this
+        VarSizeBuffer("product_serial_number", UBInt16)
    ]
+
+class UnitSerialNumberVPDPageCommand(EVPDInquiryCommand):
+    def __init__(self):
+        super(UnitSerialNumberVPDPageCommand, self).__init__(0x80, 255, UnitSerialNumberVPDPageData)
 
 INQUIRY_PAGE_SUPPORTED_VPD_PAGES = 0x00
 INQUIRY_PAGE_UNIT_SERIAL_NUMBER = 0x80
 INQUIRY_PAGE_DEVICE_IDENTIFICATION = 0x83
 
 SUPPORTED_VPD_PAGES_COMMANDS = {
-    INQUIRY_PAGE_SUPPORTED_VPD_PAGES: SupportedVPDPagesInquiryCommand
+    INQUIRY_PAGE_SUPPORTED_VPD_PAGES: SupportedVPDPagesCommand,
+    INQUIRY_PAGE_UNIT_SERIAL_NUMBER: UnitSerialNumberVPDPageCommand
 }
