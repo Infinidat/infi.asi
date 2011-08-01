@@ -3,7 +3,7 @@ from .. import SCSIReadCommand
 from .operation_code import OperationCode
 from .control import Control, DEFAULT_CONTROL
 from infi.instruct import *
-from infi.instruct.macros import VarSizeBuffer
+from infi.instruct.macros import VarSizeBuffer, SumSizeArray
 
 # spc4r30: 6.4.1 (page 259)
 CDB_OPCODE_INQUIRY = 0x12
@@ -134,9 +134,36 @@ class UnitSerialNumberVPDPageData(Struct):
         VarSizeBuffer("product_serial_number", UBInt16)
    ]
 
+# spc4r30: 7.8.15
 class UnitSerialNumberVPDPageCommand(EVPDInquiryCommand):
     def __init__(self):
         super(UnitSerialNumberVPDPageCommand, self).__init__(0x80, 255, UnitSerialNumberVPDPageData)
+
+# spc4r30: 7.8.5.1 page 612
+class DesignationDescriptor(Struct):
+    _fields_ = [
+                BitField("code_set", 4),
+                BitField("protocol_identifier", 4),
+                BitField("designator_type", 4),
+                BitField("association", 2),
+                BitField("reserved", 1),
+                BitField("piv", 1),
+                BitPadding(8),
+                SumSizeArray("designator", UBInt8, UBInt8)
+                ]
+
+# spc4r30: 7.8.15 (page 641)
+class DeviceIdentificationVPDPageData(Struct):
+    _fields_ = [
+        Field("peripheral_device", PeripheralDevice),
+        UBInt8("page_code"),
+        SumSizeArray("designation_descriptor_list", UBInt16, DesignationDescriptor)
+   ]
+
+# spc4r30: 7.8.5
+class DeviceIdentificationVPDPageCommand(EVPDInquiryCommand):
+    def __init__(self):
+        super(DeviceIdentificationVPDPageCommand, self).__init__(0x83, 255, DeviceIdentificationVPDPageData)
 
 INQUIRY_PAGE_SUPPORTED_VPD_PAGES = 0x00
 INQUIRY_PAGE_UNIT_SERIAL_NUMBER = 0x80
@@ -144,5 +171,6 @@ INQUIRY_PAGE_DEVICE_IDENTIFICATION = 0x83
 
 SUPPORTED_VPD_PAGES_COMMANDS = {
     INQUIRY_PAGE_SUPPORTED_VPD_PAGES: SupportedVPDPagesCommand,
-    INQUIRY_PAGE_UNIT_SERIAL_NUMBER: UnitSerialNumberVPDPageCommand
+    INQUIRY_PAGE_UNIT_SERIAL_NUMBER: UnitSerialNumberVPDPageCommand,
+    INQUIRY_PAGE_DEVICE_IDENTIFICATION: DeviceIdentificationVPDPageCommand
 }
