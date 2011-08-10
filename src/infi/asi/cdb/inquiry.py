@@ -139,25 +139,13 @@ class UnitSerialNumberVPDPageCommand(EVPDInquiryCommand):
     def __init__(self):
         super(UnitSerialNumberVPDPageCommand, self).__init__(0x80, 255, UnitSerialNumberVPDPageData)
 
-# spc4r30: 7.8.5.1 page 612
-class DesignationDescriptor(Struct):
-    _fields_ = [
-                BitField("code_set", 4),
-                BitField("protocol_identifier", 4),
-                BitField("designator_type", 4),
-                BitField("association", 2),
-                BitField("reserved", 1),
-                BitField("piv", 1),
-                BitPadding(8),
-                SumSizeArray("designator", UBInt8, UBInt8)
-                ]
 
 # spc4r30: 7.8.15 (page 641)
 class DeviceIdentificationVPDPageData(Struct):
     _fields_ = [
         Field("peripheral_device", PeripheralDevice),
         UBInt8("page_code"),
-        SumSizeArray("designation_descriptor_list", UBInt16, DesignationDescriptor)
+        VarSizeBuffer("page_data", UBInt16)
    ]
 
 # spc4r30: 7.8.5
