@@ -1,4 +1,4 @@
-from infi.instruct import *
+from infi.instruct import Struct, BitField, BitFields
 
 # spc4r30: 4.3.5 (page 42)
 class OperationCode(Struct):
@@ -23,3 +23,5 @@ class OperationCode(Struct):
         [ 6, 0 ], # vendor-specific
         [ 7, 0 ] # vendor-specific
     ])
+
+CDB_OPCODE_INQUIRY = 0x12

@@ -2,8 +2,8 @@ from __future__ import print_function
 import platform
 import sys
 from infi.asi import create_platform_command_executer
-from infi.asi.cdb.inquiry import StandardInquiryCommand, SupportedVPDPagesCommand, \
-        UnitSerialNumberVPDPageCommand, DeviceIdentificationVPDPageCommand
+from infi.asi.cdb.inquiry.standard import StandardInquiryCommand
+from infi.asi.cdb.inquiry import vpd_pages
 from infi.asi.coroutines.sync_adapter import sync_wait
 from infi.exceptools import print_exc
 
@@ -24,8 +24,8 @@ else:
 
 available_commands = {
                       "standard": StandardInquiryCommand,
-                      "0x80": UnitSerialNumberVPDPageCommand,
-                      "0x83": DeviceIdentificationVPDPageCommand,
+                      "0x80": vpd_pages.UnitSerialNumberVPDPageCommand,
+                      "0x83": vpd_pages.DeviceIdentificationVPDPageCommand,
                       }
 
 if sys.argv[2] not in available_commands:
