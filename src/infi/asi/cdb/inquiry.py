@@ -2,9 +2,9 @@ from . import CDB
 from .. import SCSIReadCommand
 from .operation_code import OperationCode
 from .control import Control, DEFAULT_CONTROL
-from infi.instruct import UBInt8, UBInt16, BitFields, BitPadding, BitField, Flag, Struct
+from infi.instruct import UBInt8, UBInt16, UBInt32, UBInt64, BitFields, BitPadding, BitField, Flag, Struct
 from infi.instruct import Padding, FixedSizeString, Lazy, Field, OptionalField, ConstField
-from infi.instruct.macros import VarSizeBuffer, SumSizeArray, StructFunc, SelectStructByFunc
+from infi.instruct.macros import VarSizeBuffer, SumSizeArray, StructFunc
 from infi.instruct.struct.selector import FuncStructSelectorIO
 from infi.instruct.errors import InstructError
 
@@ -143,8 +143,8 @@ class UnitSerialNumberVPDPageCommand(EVPDInquiryCommand):
         super(UnitSerialNumberVPDPageCommand, self).__init__(0x80, 255, UnitSerialNumberVPDPageData)
 
 DescriptorHeaderFieldsWithoutLength = [BitFields(BitField("code_set", 4),
-                                                 BitField("designator_type", 4),
                                                  BitField("protocol_identifier", 4),
+                                                 BitField("designator_type", 4),
                                                  BitField("association", 2),
                                                  BitField("reserved", 1),
                                                  BitField("piv", 1),
@@ -161,11 +161,14 @@ class DescriptorHeader(Struct):
 class DeviceIdentificationVPDPageData(Struct):
 
     def _determine_designator(self, stream, context=None):
+        print "entering _determine_designator"
         header = DescriptorHeader.create_from_stream(stream, context)
-
+        print "header:"
+        print repr(header)
         if header.designator_type == 0x00:
             class VendorSpecificDesignator(Struct):
-                _fields_ = DescriptorHeaderFieldsWithoutLength + [VarSizeBuffer("vendor_specific_identifier", UBInt8)]
+                _fields_ = DescriptorHeaderFields + [FixedSizeString("vendor_specific_identifier",
+                                                                     header.designator_length), ]
             return VendorSpecificDesignator
 
         if header.designator_type == 0x01:
@@ -199,12 +202,15 @@ class DeviceIdentificationVPDPageData(Struct):
             raise InstructError("reserved designator length: %d" % header.designator_length)
 
         if header.designator_type == 0x03:
-            NAAHeaderFields = DescriptorHeaderFields + \
+            NAAHeaderFields = \
                                [BitFields(BitField("naa_specific_data_high", 4),
                                           BitField("naa", 4))]
             class NAAHeader(Struct):
-                _fields = NAAHeaderFields
+                # TODO verify: ReadAhead does not go back
+                _fields_ = NAAHeaderFields
             naa_header = NAAHeader.create_from_stream(stream, context)
+            print "naa_header"
+            print repr(naa_header)
             if naa_header.naa == 0x02:
                 class NAAIEEEExtendedDesignator(Struct):
                     _fields_ = DescriptorHeaderFields + \
@@ -219,27 +225,28 @@ class DeviceIdentificationVPDPageData(Struct):
                     _fields_ = DescriptorHeaderFields + \
                                 [BitFields(BitField("locally_administered_value__high", 4),
                                            BitField("naa", 4),
-                                           BitField("locally_administered_value__low", 7))]
+                                           BitField("locally_administered_value__low", 56))]
                 return NAALocallyAssignedDesignator
             if naa_header.naa == 0x05:
                 class NAAIEEERegisteredDesignator(Struct):
                     _fields_ = DescriptorHeaderFields + \
                                 [BitFields(BitField("ieee_company_id__high", 4),
-                                           BitField("naa", 4),
-                                           BitField("ieee_company_id__middle", 16),
-                                           BitField("vendor_specific_identifier__high", 4),
-                                           BitField("ieee_company_id__low", 4),
-                                           BitField("vendor_specific_identifier__low", 32))]
-                return NAAIEEERegisteredExtendedDesignator
+                                           BitField("naa", 4)),
+                                 UBInt16("ieee_company_id__middle"),
+                                 BitFields(BitField("vendor_specific_identifier__high", 4),
+                                           BitField("ieee_company_id__low", 4)),
+                                 UBInt32("vendor_specific_identifier__low")]
+                return NAAIEEERegisteredDesignator
             if naa_header.naa == 0x06:
                 class NAAIEEERegisteredExtendedDesignator(Struct):
-                    _fields_ = DescriptorHeaderFields + [BitFields("ieee_company_id__high", 4),
-                                              BitFields("naa", 4),
-                                              BitFields("ieee_company_id__middle", 16),
-                                              BitFields("vendor_specific_identifier__high", 4),
-                                              BitFields("ieee_company_id__low", 4),
-                                              BitFields("vendor_specific_identifier__low", 32),
-                                              BitFields("vendor_specific_identifier_extension", 64), ]
+                    _fields_ = DescriptorHeaderFields + \
+                                [BitFields(BitField("ieee_company_id__high", 4),
+                                           BitField("naa", 4)),
+                                 UBInt16("ieee_company_id__middle"),
+                                 BitFields(BitField("vendor_specific_identifier__high", 4),
+                                           BitField("ieee_company_id__low", 4)),
+                                 UBInt32("vendor_specific_identifier__low"),
+                                 UBInt64("vendor_specific_identifier_extension")]
                 return NAAIEEERegisteredExtendedDesignator
             raise InstructError("reserved naa field: %d" % naa_header.naa)
 
@@ -270,11 +277,11 @@ class DeviceIdentificationVPDPageData(Struct):
         raise InstructError("unknown designator type: %d" % header.designator_type)
 
     _fields_ = [
-        Field("peripheral_device", PeripheralDevice),
-        UBInt8("page_code"),
-        SumSizeArray("designators_list", UBInt16,
-                     FuncStructSelectorIO(StructFunc(_determine_designator), (0, 255))),
-]
+                Field("peripheral_device", PeripheralDevice),
+                UBInt8("page_code"),
+                SumSizeArray("designators_list", UBInt16,
+                             FuncStructSelectorIO(StructFunc(_determine_designator), (0, 252))),
+                ]
 
 # spc4r30: 7.8.5
 class DeviceIdentificationVPDPageCommand(EVPDInquiryCommand):
