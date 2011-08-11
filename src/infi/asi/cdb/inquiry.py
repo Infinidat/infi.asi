@@ -2,8 +2,11 @@ from . import CDB
 from .. import SCSIReadCommand
 from .operation_code import OperationCode
 from .control import Control, DEFAULT_CONTROL
-from infi.instruct import *
-from infi.instruct.macros import VarSizeBuffer, SumSizeArray
+from infi.instruct import UBInt8, UBInt16, BitFields, BitPadding, BitField, Flag, Struct
+from infi.instruct import Padding, FixedSizeString, Lazy, Field, OptionalField, ConstField
+from infi.instruct.macros import VarSizeBuffer, SumSizeArray, StructFunc, SelectStructByFunc
+from infi.instruct.struct.selector import FuncStructSelectorIO
+from infi.instruct.errors import InstructError
 
 # spc4r30: 6.4.1 (page 259)
 CDB_OPCODE_INQUIRY = 0x12
@@ -139,14 +142,139 @@ class UnitSerialNumberVPDPageCommand(EVPDInquiryCommand):
     def __init__(self):
         super(UnitSerialNumberVPDPageCommand, self).__init__(0x80, 255, UnitSerialNumberVPDPageData)
 
+DescriptorHeaderFieldsWithoutLength = [BitFields(BitField("code_set", 4),
+                                                 BitField("designator_type", 4),
+                                                 BitField("protocol_identifier", 4),
+                                                 BitField("association", 2),
+                                                 BitField("reserved", 1),
+                                                 BitField("piv", 1),
+                                                 BitPadding(8),
+                                                 ),
+                                       ]
+
+DescriptorHeaderFields = DescriptorHeaderFieldsWithoutLength + [UBInt8("designator_length")]
+
+class DescriptorHeader(Struct):
+    _fields_ = DescriptorHeaderFields
 
 # spc4r30: 7.8.15 (page 641)
 class DeviceIdentificationVPDPageData(Struct):
+
+    def _determine_designator(self, stream, context=None):
+        header = DescriptorHeader.create_from_stream(stream, context)
+
+        if header.designator_type == 0x00:
+            class VendorSpecificDesignator(Struct):
+                _fields_ = DescriptorHeaderFieldsWithoutLength + [VarSizeBuffer("vendor_specific_identifier", UBInt8)]
+            return VendorSpecificDesignator
+
+        if header.designator_type == 0x01:
+            class T10VendorIDDesignator(Struct): # TODO this is ugly
+                _fields_ = DescriptorHeaderFields + [FixedSizeString("t10_vendor_identification", 8),
+                                                     FixedSizeString("vendor_specific_identifier",
+                                                                     header.designator_length - 8)]
+            return T10VendorIDDesignator
+
+        if header.designator_type == 0x02:
+            if header.designator_length == 0x08:
+                class EUI64Designator(Struct):
+                    _fields_ = DescriptorHeaderFields + \
+                                [BitFields(BitField("ieee_company_id", 24),
+                                           BitField("vendor_specific_extension_identifer", 40))]
+                return EUI64Designator
+            if header.designator_length == 0x0c:
+                class EUI64Designator12Byte(Struct):
+                    _fields_ = DescriptorHeaderFields + \
+                                [BitFields(BitField("ieee_company_id", 24),
+                                           BitField("vendor_specific_extension_identifer", 40),
+                                           BitField("directory_id", 32))]
+                return EUI64Designator12Byte
+            if header.designator_length == 0x10:
+                class EUI64Designator16Byte(Struct):
+                    _fields_ = DescriptorHeaderFields + \
+                                [BitFields(BitField("identifier_extension", 8),
+                                           BitField("ieee_company_id", 24),
+                                           BitField("vendor_specific_extension_identifer", 40))]
+                return EUI64Designator16Byte
+            raise InstructError("reserved designator length: %d" % header.designator_length)
+
+        if header.designator_type == 0x03:
+            NAAHeaderFields = DescriptorHeaderFields + \
+                               [BitFields(BitField("naa_specific_data_high", 4),
+                                          BitField("naa", 4))]
+            class NAAHeader(Struct):
+                _fields = NAAHeaderFields
+            naa_header = NAAHeader.create_from_stream(stream, context)
+            if naa_header.naa == 0x02:
+                class NAAIEEEExtendedDesignator(Struct):
+                    _fields_ = DescriptorHeaderFields + \
+                                [BitFields(BitField("vendor_specific_identifer_a__high", 4),
+                                           BitField("naa", 4),
+                                           BitField("vendor_specific_identifier_a__low", 8),
+                                           BitField("ieee_company_id", 24),
+                                           BitField("vendor_specific_identifier_b__low", 24))]
+                return NAAIEEEExtendedDesignator
+            if naa_header.naa == 0x03:
+                class NAALocallyAssignedDesignator(Struct):
+                    _fields_ = DescriptorHeaderFields + \
+                                [BitFields(BitField("locally_administered_value__high", 4),
+                                           BitField("naa", 4),
+                                           BitField("locally_administered_value__low", 7))]
+                return NAALocallyAssignedDesignator
+            if naa_header.naa == 0x05:
+                class NAAIEEERegisteredDesignator(Struct):
+                    _fields_ = DescriptorHeaderFields + \
+                                [BitFields(BitField("ieee_company_id__high", 4),
+                                           BitField("naa", 4),
+                                           BitField("ieee_company_id__middle", 16),
+                                           BitField("vendor_specific_identifier__high", 4),
+                                           BitField("ieee_company_id__low", 4),
+                                           BitField("vendor_specific_identifier__low", 32))]
+                return NAAIEEERegisteredExtendedDesignator
+            if naa_header.naa == 0x06:
+                class NAAIEEERegisteredExtendedDesignator(Struct):
+                    _fields_ = DescriptorHeaderFields + [BitFields("ieee_company_id__high", 4),
+                                              BitFields("naa", 4),
+                                              BitFields("ieee_company_id__middle", 16),
+                                              BitFields("vendor_specific_identifier__high", 4),
+                                              BitFields("ieee_company_id__low", 4),
+                                              BitFields("vendor_specific_identifier__low", 32),
+                                              BitFields("vendor_specific_identifier_extension", 64), ]
+                return NAAIEEERegisteredExtendedDesignator
+            raise InstructError("reserved naa field: %d" % naa_header.naa)
+
+        if header.designator_type == 0x04:
+            class RelativeTargetPortDesignator(Struct):
+                _fields_ = DescriptorHeaderFields + [Padding(2),
+                                                     UBInt16("relative_target_port_identifier")]
+            return RelativeTargetPortDesignator
+        if header.designator_type == 0x05:
+            class TargetPortGroupDesignator(Struct):
+                _fields_ = DescriptorHeaderFields + [Padding(2),
+                                                     UBInt16("target_port_group")]
+            return TargetPortGroupDesignator
+        if header.designator_type == 0x06:
+            class LogicalUnitGroupDesignator(Struct):
+                _fields_ = DescriptorHeaderFields + [Padding(2),
+                                                     UBInt16("logical_unit_group")]
+            return LogicalUnitGroupDesignator
+        if header.designator_type == 0x07:
+            class MD5LogicalUnitDesignator(Struct):
+                _fields_ = DescriptorHeaderFields + [Padding(2),
+                                                     FixedSizeString("md5_logical_unit_identifier", 16)]
+            return MD5LogicalUnitDesignator
+        if header.designator_type == 0x08:
+            class SCSINameDesignator(Struct):
+                _fields_ = DescriptorHeaderFieldsWithoutLength + [VarSizeBuffer("scsi_name_string", UBInt8)]
+            return SCSINameDesignator
+        raise InstructError("unknown designator type: %d" % header.designator_type)
+
     _fields_ = [
         Field("peripheral_device", PeripheralDevice),
         UBInt8("page_code"),
-        VarSizeBuffer("page_data", UBInt16)
-   ]
+        SumSizeArray("designators_list", UBInt16,
+                     FuncStructSelectorIO(StructFunc(_determine_designator), (0, 255))),
+]
 
 # spc4r30: 7.8.5
 class DeviceIdentificationVPDPageCommand(EVPDInquiryCommand):
