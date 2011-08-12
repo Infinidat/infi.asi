@@ -133,9 +133,9 @@ class CommandExecuterBase(CommandExecuter):
     def _check_condition(self, buf):
         response_code = SCSISenseResponseCode.create_from_string(buf)
         # spc4r30 4.5:
-        if response_code.code in (0x72, 0x73):
+        if response_code.code in (0x70, 0x71):
             sense = SCSISenseDataFixed.create_from_string(buf)
-        elif response_code.code in (0x70, 0x71):
+        elif response_code.code in (0x72, 0x73):
             sense = SCSISenseDataDescriptorBased.create_from_string(buf)
         else:
             sense = None
