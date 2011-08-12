@@ -98,10 +98,12 @@ class MD5LogicalUnitDesignator(Struct):
 
 # spc4r30, section 7.8.5.11, page 624
 class SCSINameDesignator(Struct):
+    # BUG: INSTRUCT-7
     _fields_ = DescriptorHeaderFieldsWithoutLength + [VarSizeString("scsi_name_string", UBInt8)]
 
 # spc4r30, section 7.8.5.2.4, page 615
 class VendorSpecificDesignator(Struct):
+    # BUG: INSTRUCT-7
     _fields_ = DescriptorHeaderFieldsWithoutLength + [VarSizeString("vendor_specific_identifier", UBInt8)]
 
 class T10VendorIDDesignator(Struct): # TODO this is ugly

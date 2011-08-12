@@ -6,6 +6,7 @@ from infi.instruct.errors import InstructError
 from . import designators
 from ... import PeripheralDeviceData
 from .. import EVPDInquiryCommand
+from infi.asi.cdb.inquiry.vpd_pages.device_identification.designators import SCSINameDesignator
 
 def _get_designator_header(stream, context):
     header = designators.DescriptorHeader.create_from_stream(stream, context)
@@ -19,10 +20,23 @@ def _get_designators_by_type_dict(header):
         _fields_ = designators.DescriptorHeaderFields + [FixedSizeString("t10_vendor_identification", 8),
                                              FixedSizeString("vendor_specific_identifier",
                                                              header.designator_length - 8)]
+    # BUG: INSTRUCT-7
+    class SCSINameDesignator(Struct):
+        _fields_ = designators.DescriptorHeaderFields + \
+                    [FixedSizeString("scsi_name_string", header.designator_length)]
+
+    # BUG: INSTRUCT-7
+    class VendorSpecificDesignator(Struct):
+        _fields_ = designators.DescriptorHeaderFields + \
+                    [FixedSizeString("vendor_specific_identifier", header.designator_length)]
 
     # For the designators created above that needs to be custom built
     DESIGNATORS_BY_TYPE = designators.SINGLE_TYPE_DESIGNATORS.copy()
-    DESIGNATORS_BY_TYPE.update({0x01: T10VendorIDDesignator})
+    DESIGNATORS_BY_TYPE.update({
+                                0x00: VendorSpecificDesignator,
+                                0x01: T10VendorIDDesignator,
+                                0x08: SCSINameDesignator
+                                })
     return DESIGNATORS_BY_TYPE
 
 def _determine_eui_designator(header):
