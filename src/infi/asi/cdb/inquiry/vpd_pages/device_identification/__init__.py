@@ -21,12 +21,12 @@ def _get_designators_by_type_dict(header):
                                              FixedSizeString("vendor_specific_identifier",
                                                              header.designator_length - 8)]
     # BUG: INSTRUCT-7
-    class SCSINameDesignator(Struct):
+    class SCSINameDesignator(designators.SCSINameDesignator):
         _fields_ = designators.DescriptorHeaderFields + \
                     [FixedSizeString("scsi_name_string", header.designator_length)]
 
     # BUG: INSTRUCT-7
-    class VendorSpecificDesignator(Struct):
+    class VendorSpecificDesignator(designators.VendorSpecificDesignator):
         _fields_ = designators.DescriptorHeaderFields + \
                     [FixedSizeString("vendor_specific_identifier", header.designator_length)]
 
