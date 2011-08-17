@@ -55,7 +55,7 @@ class SCSISenseDataDescriptorBased(Struct):
     _fields_ = [
         Field("response_code", SCSISenseResponseCode),
         BitFields(
-            MappingField("sense_key", BitIO(4), SCSI_SENSE_KEY),
+            MappingField("sense_key", BitMarshal(4), SCSI_SENSE_KEY),
             BitPadding(4)
             ),
         Field("additional_sense_code", AdditionalSenseCode),
@@ -70,7 +70,7 @@ class SCSISenseDataFixed(Struct):
         Field("response_code", SCSISenseResponseCode),
         BytePadding(1),
         BitFields(
-            MappingField("sense_key", BitIO(4), SCSI_SENSE_KEY),
+            MappingField("sense_key", BitMarshal(4), SCSI_SENSE_KEY),
             BitPadding(1),
             BitFlag("ili"),
             BitFlag("eom"),

@@ -31,8 +31,7 @@ def test_sense():
 def test_sense2():
     # http://johnmeister.com/CS/UNIX/HP-UX/event-monitor-example.html
     data = SCSISenseDataFixed.create_from_string(binascii.unhexlify("700005000000000A00000000240000C80001"))
-    print(repr(data))
-
+    assert repr(data) == "SCSISenseDataFixed(response_code=SCSISenseResponseCode(code=112, valid=0), <1 bytes padding>, sense_key='ILLEGAL_REQUEST', <1 bits padding>, ili=0, eom=0, filemark=0, information=0, additional_sense_length=10, command_specific_information=0, additional_sense_code=AdditionalSenseCode(INVALID FIELD IN CDB: code=0x24, qualifier=0x00), field_replaceable_unit_code=0, sense_key_specific_high=72, sksv=1, sense_key_specific_low=0)", repr(data)
 
 # http://forums.support.roxio.com/topic/74314-tape-media-set-bad-media/
 # 70 00 03 00 00 00 00 1e 00 00 00 00 3b 08 00 00 03 9c
