@@ -23,7 +23,7 @@ class LinuxInquiryTestCase(TestCase):
         from infi.asi.unix import OSFile
         f = OSFile(open(path, O_RDWR))
         executer = create_platform_command_executer(f)
-        cdb = command.create()
+        cdb = command()
         try:
             _ = sync_wait(cdb.execute(executer))
         except AsiCheckConditionError, e:

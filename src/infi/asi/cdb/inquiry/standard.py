@@ -1,6 +1,6 @@
 
 from ... import SCSIReadCommand
-from infi.instruct import UBInt8, UBInt16, UBInt32, UBInt64, BitFields, BitPadding, BitField, Flag, Struct
+from infi.instruct import UBInt8, UBInt16, UBInt32, UBInt64, BitFields, BitPadding, BitField, BitFlag, Struct
 from infi.instruct import Padding, FixedSizeString, Lazy, Field, OptionalField
 from . import InquiryCommand
 
@@ -11,9 +11,9 @@ class StandardInquiryExtendedData(Struct):
     _fields_ = [
         FixedSizeString("vendor_specific", 20),
         BitFields(BitPadding(5), # reserved
-                  Flag("ius"), # SPC-5 specific
-                  Flag("qas"), # SPC-5 specific
-                  Flag("clocking") # SPC-5 specific
+                  BitFlag("ius"), # SPC-5 specific
+                  BitFlag("qas"), # SPC-5 specific
+                  BitFlag("clocking") # SPC-5 specific
         ),
         Padding(1), # reserved
         FixedSizeString("version_descriptors", 16),
@@ -37,36 +37,36 @@ class StandardInquiryData(Struct):
             Field("peripheral_device", PeripheralDeviceData),
             BitFields(
                 BitPadding(7),
-                Flag("rmb"),
+                BitFlag("rmb"),
             ),
             UBInt8("version"),
             BitFields(
                 BitField("response_data_format", 4),
-                Flag("hisup"),
-                Flag("normaca"),
+                BitFlag("hisup"),
+                BitFlag("normaca"),
                 BitPadding(2), # 6-7: obsolete
             ),
             UBInt8("additional_length"),
             BitFields(
-                Flag("protect"),
+                BitFlag("protect"),
                 BitPadding(2), # reserved
-                Flag("3pc"),
+                BitFlag("3pc"),
                 BitField("tpgs", 2),
-                Flag("acc"),
-                Flag("sccs"),
+                BitFlag("acc"),
+                BitFlag("sccs"),
             ),
             BitFields(BitPadding(1), # obsolete
-                      Flag("enc_serv"),
-                      Flag("vs"),
-                      Flag("multi_p"),
+                      BitFlag("enc_serv"),
+                      BitFlag("vs"),
+                      BitFlag("multi_p"),
                       BitPadding(3), # obsolete
-                      Flag("addr16")), # SPC-5 specific
+                      BitFlag("addr16")), # SPC-5 specific
             BitFields(BitPadding(2), # obsolete
-                      Flag("wbus16"), # SPC-5 specific
-                      Flag("sync"), # SPC-5 specific
+                      BitFlag("wbus16"), # SPC-5 specific
+                      BitFlag("sync"), # SPC-5 specific
                       BitPadding(2), # obsolete
-                      Flag("cmd_que"),
-                      Flag("vs")),
+                      BitFlag("cmd_que"),
+                      BitFlag("vs")),
             FixedSizeString("t10_vendor_identification", 8),
             FixedSizeString("product_identification", 16),
             FixedSizeString("product_revision_level", 4),
@@ -84,6 +84,6 @@ class StandardInquiryCommand(InquiryCommand):
     def execute(self, executer):
         datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIReadCommand(datagram, self.allocation_length))
-        standard_inquiry_data = StandardInquiryData.create_instance_from_string(result_datagram)
+        standard_inquiry_data = StandardInquiryData.create_from_string(result_datagram)
 
         yield standard_inquiry_data

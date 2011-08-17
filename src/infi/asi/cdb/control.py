@@ -9,4 +9,4 @@ class Control(Struct):
         BitField("vendor_specific", 2), # 6-7: vendor specific
     )
 
-DEFAULT_CONTROL = Control.create(vendor_specific=0, naca=0)
+DEFAULT_CONTROL = Control(vendor_specific=0, naca=0)

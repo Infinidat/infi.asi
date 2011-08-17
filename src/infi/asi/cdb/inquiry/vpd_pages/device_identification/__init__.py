@@ -1,6 +1,6 @@
 
 from infi.instruct import Struct, FixedSizeString, UBInt8, UBInt16, SumSizeArray, Field
-from infi.instruct import FuncStructSelectorIO, StructFunc
+from infi.instruct import FuncStructSelectorMarshal, StructFunc
 from infi.instruct.errors import InstructError
 
 from . import designators
@@ -73,7 +73,7 @@ class DeviceIdentificationVPDPageData(Struct):
                 Field("peripheral_device", PeripheralDeviceData),
                 UBInt8("page_code"),
                 SumSizeArray("designators_list", UBInt16,
-                             FuncStructSelectorIO(StructFunc(_determine_designator), (0, 252))),
+                             FuncStructSelectorMarshal(StructFunc(_determine_designator), (0, 252))),
                 ]
 
 # spc4r30: 7.8.5
