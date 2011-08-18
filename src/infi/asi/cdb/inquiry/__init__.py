@@ -6,6 +6,7 @@ from infi.instruct import UBInt8, BitFields, BitPadding, BitField, BitFlag, Stru
 from infi.instruct import Padding, Field, ConstField
 from infi.instruct.errors import InstructError
 
+# spc4r30: 6.4.2 (page 261)
 class PeripheralDeviceData(Struct):
     _fields_ = [
         BitFields(
@@ -16,6 +17,7 @@ class PeripheralDeviceData(Struct):
 
 from ..operation_code import CDB_OPCODE_INQUIRY
 
+# spc4r30: 6.4.1 (page 259)
 class InquiryCommand(CDB):
     _fields_ = [
         ConstField("opcode", OperationCode(opcode=CDB_OPCODE_INQUIRY)),
@@ -28,5 +30,15 @@ class InquiryCommand(CDB):
         UBInt8("allocation_length"),
         Field("control", Control, DEFAULT_CONTROL)
     ]
+
+    def __init__(self, result_class, *args, **kwargs):
+        super(InquiryCommand, self).__init__(*args, **kwargs)
+        self.result_class = result_class
+
+    def execute(self, executer):
+        datagram = self.create_datagram()
+        result_datagram = yield executer.call(SCSIReadCommand(datagram, self.allocation_length))
+        result = self.result_class.create_from_string(result_datagram)
+        yield result
 
 __all__ = []

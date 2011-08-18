@@ -1,4 +1,3 @@
-
 from infi.instruct import UBInt8, UBInt16, Struct, Field
 from infi.instruct.macros import SumSizeArray
 from .. import PeripheralDeviceData

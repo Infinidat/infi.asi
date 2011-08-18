@@ -1,6 +1,6 @@
 from infi.instruct import UBInt8, UBInt16, UBInt32, UBInt64, BitFields, BitPadding, BitField, Struct
 from infi.instruct import Padding, FixedSizeString
-from infi.instruct.macros import VarSizeString
+from infi.instruct.macros import VarSizeString, ReadPointer, CallableReader, StructFunc
 
 DescriptorHeaderFieldsWithoutLength = [BitFields(BitField("code_set", 4),
                                                  BitField("protocol_identifier", 4),
@@ -37,11 +37,9 @@ class EUI64_16Byte_Designator(Struct):
                            BitField("ieee_company_id", 24),
                            BitField("vendor_specific_extension_identifer", 40))]
 
-NAAHeaderFields = [BitFields(BitField("naa_specific_data_high", 4), BitField("naa", 4))]
-
 # spc4r30, section 7.8.5.6.1, page 618
 class NAA_Header(Struct):
-    _fields_ = NAAHeaderFields
+    _fields_ = [BitFields(BitField("naa_specific_data_high", 4), BitField("naa", 4))]
 
 # spc4r30, section 7.8.5.6.2, page 619
 class NAA_IEEE_Extended_Designator(Struct):
@@ -98,17 +96,20 @@ class MD5LogicalUnitDesignator(Struct):
 
 # spc4r30, section 7.8.5.11, page 624
 class SCSINameDesignator(Struct):
-    # BUG: INSTRUCT-7
-    _fields_ = DescriptorHeaderFieldsWithoutLength + [VarSizeString("scsi_name_string", UBInt8)]
+    _fields_ = DescriptorHeaderFields + [VarSizeString("scsi_name_string", ReadPointer("designator_length"))]
 
 # spc4r30, section 7.8.5.2.4, page 615
 class VendorSpecificDesignator(Struct):
-    # BUG: INSTRUCT-7
-    _fields_ = DescriptorHeaderFieldsWithoutLength + [VarSizeString("vendor_specific_identifier", UBInt8)]
+    _fields_ = DescriptorHeaderFields + [VarSizeString("vendor_specific_identifier", ReadPointer("designator_length"))]
 
-class T10VendorIDDesignator(Struct): # TODO this is ugly
-    _fields_ = []
-
+class T10VendorIDDesignator(Struct):
+    def _calc_vendor_specific_identifier_size(self, stream, context):
+        return self.designator_length - 8
+    
+    _fields_ = DescriptorHeaderFields + \
+               [ FixedSizeString("t10_vendor_identification", 8),
+                 VarSizeString("vendor_specific_identifier",
+                               CallableReader(StructFunc(_calc_vendor_specific_identifier_size))) ]
 
 EUI64_BY_LENGTH = {
                    0x08: EUI64_Designator,

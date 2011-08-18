@@ -1,4 +1,3 @@
-
 from infi.instruct import Struct, Field, UBInt8, UBInt16, VarSizeBuffer
 from .. import PeripheralDeviceData
 from . import EVPDInquiryCommand

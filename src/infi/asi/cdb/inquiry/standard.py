@@ -1,8 +1,7 @@
-
 from ... import SCSIReadCommand
 from infi.instruct import UBInt8, UBInt16, UBInt32, UBInt64, BitFields, BitPadding, BitField, BitFlag, Struct
 from infi.instruct import Padding, FixedSizeString, Lazy, Field, OptionalField
-from . import InquiryCommand
+from . import InquiryCommand, PeripheralDeviceData
 
 # spc4r30: 6.4.1 (page 259)
 CDB_OPCODE_INQUIRY = 0x12
@@ -18,14 +17,6 @@ class StandardInquiryExtendedData(Struct):
         Padding(1), # reserved
         FixedSizeString("version_descriptors", 16),
         Padding(22)
-    ]
-
-class PeripheralDeviceData(Struct):
-    _fields_ = [
-        BitFields(
-            BitField("type", 5), # 0-4
-            BitField("qualifier", 3), # 5-7
-        )
     ]
 
 class StandardInquiryData(Struct):
@@ -78,12 +69,6 @@ StandardInquiryDataLength = StandardInquiryData.min_max_sizeof().min + StandardI
 
 class StandardInquiryCommand(InquiryCommand):
     def __init__(self, page_code=0, evpd=0, allocation_length=StandardInquiryDataLength):
-        super(StandardInquiryCommand, self).__init__(page_code=page_code, evpd=evpd,
+        super(StandardInquiryCommand, self).__init__(result_class=StandardInquiryData,
+                                                     page_code=page_code, evpd=evpd,
                                                      allocation_length=allocation_length)
-
-    def execute(self, executer):
-        datagram = self.create_datagram()
-        result_datagram = yield executer.call(SCSIReadCommand(datagram, self.allocation_length))
-        standard_inquiry_data = StandardInquiryData.create_from_string(result_datagram)
-
-        yield standard_inquiry_data
