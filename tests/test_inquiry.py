@@ -35,3 +35,65 @@ class LinuxInquiryTestCase(TestCase):
             else:
                 raise
         f.close()
+
+class DeviceIdentification(TestCase):
+    def test__recorded_example_1(self):
+        """
+        VPD INQUIRY: Device Identification page
+  Designation descriptor number 1, descriptor length: 20
+    designator_type: NAA,  code_set: Binary
+    associated with the addressed logical unit
+      NAA 6, IEEE Company_id: 0x402
+      Vendor Specific Identifier: 0x1f45eb5
+      Vendor Specific Identifier Extension: 0x66d41cc300000000
+      [0x6000402001f45eb566d41cc300000000]
+  Designation descriptor number 2, descriptor length: 8
+    designator_type: Relative target port,  code_set: Binary
+    associated with the target port
+      Relative target port: 0x2
+  Designation descriptor number 3, descriptor length: 8
+    designator_type: Target port group,  code_set: Binary
+    associated with the target port
+      Target port group: 0x2
+      """
+        from infi.asi.cdb.inquiry.vpd_pages.device_identification import  DeviceIdentificationVPDPageData
+        buffer = '\x00\x83\x00$\x01\x03\x00\x10`\x00@ \x01\xf4^\xb5f\xd4\x1c\xc3\x00\x00\x00\x00\x01\x14\x00\x04\x00\x00\x00\x02\x01\x15\x00\x04\x00\x00\x00\x02'
+        obj = DeviceIdentificationVPDPageData.create_from_string(buffer)
+        self.assertEqual(len(obj.designators_list), 3)
+
+    def test__recorded_example_2(self):
+        """
+        VPD INQUIRY: Device Identification page
+  Designation descriptor number 1, descriptor length: 12
+    designator_type: NAA,  code_set: Binary
+    associated with the addressed logical unit
+      NAA 5, IEEE Company_id: 0x742b0f
+      Vendor Specific Identifier: 0x10300000
+      [0x5742b0f010300000]
+  Designation descriptor number 2, descriptor length: 23
+    designator_type: vendor specific [0x0],  code_set: ASCII
+    associated with the addressed logical unit
+      vendor specific: ip=251.252.253.254
+  Designation descriptor number 3, descriptor length: 8
+    designator_type: Relative target port,  code_set: Binary
+    associated with the target port
+      Relative target port: 0x2003
+  Designation descriptor number 4, descriptor length: 8
+    designator_type: Target port group,  code_set: Binary
+    associated with the target port
+      Target port group: 0x2003
+  Designation descriptor number 5, descriptor length: 33
+    designator_type: SCSI name string,  code_set: UTF-8
+    associated with the addressed logical unit
+      SCSI name string:
+      host=just_for_test_host_name
+  Designation descriptor number 6, descriptor length: 16
+    designator_type: SCSI name string,  code_set: UTF-8
+    associated with the addressed logical unit
+      SCSI name string:
+      vol=VGX15S """
+        from infi.asi.cdb.inquiry.vpd_pages.device_identification import  DeviceIdentificationVPDPageData
+        buffer = '\x00\x83\x00d\x01\x03\x00\x08WB\xb0\xf0\x100\x00\x00\x02\x00\x00\x13ip=251.252.253.254\x00\x01\x14\x00\x04\x00\x00 \x03\x01\x15\x00\x04\x00\x00 \x03\x03\x08\x00\x1dhost=just_for_test_host_name\x00\x03\x08\x00\x0cvol=VGX15S \x00'
+        from logging import debug; debug(len(buffer))
+        obj = DeviceIdentificationVPDPageData.create_from_string(buffer)
+        self.assertEqual(len(obj.designators_list), 6)
