@@ -19,6 +19,7 @@ class StandardInquiryExtendedData(Struct):
         Padding(22)
     ]
 
+# spc4r30: 6.4.2 (page 261)
 class StandardInquiryData(Struct):
     def _is_extended_data_exist(self, stream, context):
         return self.additional_length >= StandardInquiryExtendedData.min_max_sizeof().max
