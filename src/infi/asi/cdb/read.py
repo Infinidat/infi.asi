@@ -49,10 +49,10 @@ class Read10Command(CDB):
                 ConstField("opcode", OperationCode(opcode=CDB_OPCODE_READ_10)),
                 BitFields(
                           BitPadding(1),
-                          Flag("fua_nv", 0),
+                          BitFlag("fua_nv", 0),
                           BitPadding(1),
-                          Flag("fua", 0),
-                          Flag("dpo", 0),
+                          BitFlag("fua", 0),
+                          BitFlag("dpo", 0),
                           BitField("rdprotect", 3, 0),
                           ),
                 UBInt32("logical_block_address"),
