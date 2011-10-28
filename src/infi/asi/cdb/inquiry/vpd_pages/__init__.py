@@ -9,15 +9,21 @@ class EVPDInquiryCommand(InquiryCommand):
 INQUIRY_PAGE_SUPPORTED_VPD_PAGES = 0x00
 INQUIRY_PAGE_UNIT_SERIAL_NUMBER = 0x80
 INQUIRY_PAGE_DEVICE_IDENTIFICATION = 0x83
+INQUIRY_PAGE_BLOCK_LIMITS = 0xb0
+INQUIRY_PAGE_VERITAS = 0xc0
 
 from .unit_serial_number import UnitSerialNumberVPDPageCommand
 from .device_identification import DeviceIdentificationVPDPageCommand
 from .supported_pages import SupportedVPDPagesCommand
+from .block_limits import BlockLimitsPageCommand
+from .veritas import VeritasVPDPageCommand
 
 # TODO should we have a default page parser that creates a string of the entire page?
 
 SUPPORTED_VPD_PAGES_COMMANDS = {
     INQUIRY_PAGE_SUPPORTED_VPD_PAGES: SupportedVPDPagesCommand,
     INQUIRY_PAGE_UNIT_SERIAL_NUMBER: UnitSerialNumberVPDPageCommand,
-    INQUIRY_PAGE_DEVICE_IDENTIFICATION: DeviceIdentificationVPDPageCommand
+    INQUIRY_PAGE_DEVICE_IDENTIFICATION: DeviceIdentificationVPDPageCommand,
+    INQUIRY_PAGE_BLOCK_LIMITS: BlockLimitsPageCommand,
+    INQUIRY_PAGE_VERITAS: VeritasVPDPageCommand
 }
