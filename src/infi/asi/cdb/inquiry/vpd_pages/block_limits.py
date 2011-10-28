@@ -1,4 +1,5 @@
-from infi.instruct import Struct, Field, UBInt8, UBInt16, UBInt32, UBInt64, BitFields, BitField, BitPadding
+from infi.instruct import Struct, Field, UBInt8, UBInt16, UBInt32, UBInt64
+from infi.instruct import BitFields, BitField, BitPadding, Padding
 from .. import PeripheralDeviceData
 from . import EVPDInquiryCommand
 
@@ -21,12 +22,12 @@ class BlockLimitsVPDPageData(Struct):
         BitFields(BitField("ugavalid", 1),
                   BitField("unmap_granularity_alignment", 31)),
         UBInt64("maximum_write_same_length"),
-        BitFields(BitPadding(21)),
+        Padding(21),
     ]
 
 class BlockLimitsPageCommand(EVPDInquiryCommand):
     def __init__(self):
         super(BlockLimitsPageCommand, self).__init__(0xb0, 255, BlockLimitsVPDPageData)
 
-__all__ = ["UnitSerialNumberVPDPageCommand", "UnitSerialNumberVPDPageData"]
+__all__ = ["BlockLimitsPageCommand", "BlockLimitsVPDPageData"]
 
