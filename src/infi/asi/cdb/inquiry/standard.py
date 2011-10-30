@@ -51,8 +51,8 @@ class StandardInquiryData(Struct):
                       BitPadding(3), # obsolete
                       BitFlag("multi_p"),
                       BitFlag("vs1"),
-                      BitFlag("enc_serv")),
-                      BitPadding(1), # obsolete
+                      BitFlag("enc_serv"),
+                      BitPadding(1)), # obsolete
             BitFields(BitFlag("vs2"),
                       BitFlag("cmd_que"),
                       BitPadding(2), # obsolete
