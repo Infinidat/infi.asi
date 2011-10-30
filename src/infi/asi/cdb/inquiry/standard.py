@@ -47,18 +47,18 @@ class StandardInquiryData(Struct):
                 BitFlag("acc"),
                 BitFlag("sccs"),
             ),
-            BitFields(BitPadding(1), # obsolete
-                      BitFlag("enc_serv"),
-                      BitFlag("vs"),
-                      BitFlag("multi_p"),
+            BitFields(BitFlag("addr16"), # SPC-5 specific
                       BitPadding(3), # obsolete
-                      BitFlag("addr16")), # SPC-5 specific
-            BitFields(BitPadding(2), # obsolete
-                      BitFlag("wbus16"), # SPC-5 specific
-                      BitFlag("sync"), # SPC-5 specific
-                      BitPadding(2), # obsolete
+                      BitFlag("multi_p"),
+                      BitFlag("vs1"),
+                      BitFlag("enc_serv")),
+                      BitPadding(1), # obsolete
+            BitFields(BitFlag("vs2"),
                       BitFlag("cmd_que"),
-                      BitFlag("vs")),
+                      BitPadding(2), # obsolete
+                      BitFlag("sync"), # SPC-5 specific
+                      BitFlag("wbus16"), # SPC-5 specific
+                      BitPadding(2)), # obsolete
             FixedSizeString("t10_vendor_identification", 8),
             FixedSizeString("product_identification", 16),
             FixedSizeString("product_revision_level", 4),
