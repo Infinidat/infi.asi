@@ -35,7 +35,7 @@ try:
     command = available_commands[sys.argv[2]]
 
     executer = create_platform_command_executer(f)
-    cdb = command.create()
+    cdb = command()
     data = sync_wait(cdb.execute(executer))
 
     # print(data), __str__ is broken
