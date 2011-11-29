@@ -12,7 +12,7 @@ class AsiWin32OSError(AsiOSError):
             message = "%s (win32 error %d: %s)" % (details, errno, error_string)
         else:
             message = "Win32 error %d: %s" % (errno, error_string)
-        super(AsiWin32OSError, self).__init__(error_string)
+        super(AsiWin32OSError, self).__init__(message)
         self.win32_errno = errno
         self.win32_message = error_string
 
