@@ -96,8 +96,8 @@ class OSFile(object):
 
     def __init__(self, path, access=IOCTL_ACCESS, share=IOCTL_SHARE,
                  creation_disposition=IOCTL_CREATION, flags=0):
-        self.path = path
-        self.handle = CreateFile(path, access, share, 0, creation_disposition, flags, 0)
+        self.path = unicode(path)
+        self.handle = CreateFile(self.path, access, share, 0, creation_disposition, flags, 0)
         if self.handle == -1:
             raise AsiWin32OSError(GetLastError(), "CreateFile for path %s failed" % path)
 
