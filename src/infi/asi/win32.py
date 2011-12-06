@@ -2,6 +2,18 @@ from ctypes import *
 from . import CommandExecuterBase, DEFAULT_MAX_QUEUE_SIZE, SCSIReadCommand, SCSIWriteCommand
 from .errors import AsiOSError, AsiSCSIError
 
+# Taken from Windows DDK
+# WinDDK/7600.16385.1/inc/ddk/scsi.h
+SCSISTAT_GOOD                   = 0x00
+SCSISTAT_CHECK_CONDITION        = 0x02
+SCSISTAT_CONDITION_MET          = 0x04
+SCSISTAT_BUSY                   = 0x08
+SCSISTAT_INTERMEDIATE           = 0x10
+SCSISTAT_INTERMEDIATE_COND_MET  = 0x14
+CSISTAT_RESERVATION_CONFLICT    = 0x18
+SCSISTAT_COMMAND_TERMINATED     = 0x22
+SCSISTAT_QUEUE_FULL             = 0x28
+
 class AsiWin32OSError(AsiOSError):
     def __init__(self, errno, details=None):
         buf = create_string_buffer(1024)
@@ -12,7 +24,7 @@ class AsiWin32OSError(AsiOSError):
             message = "%s (win32 error %d: %s)" % (details, errno, error_string)
         else:
             message = "Win32 error %d: %s" % (errno, error_string)
-        super(AsiWin32OSError, self).__init__(error_string)
+        super(AsiWin32OSError, self).__init__(message)
         self.win32_errno = errno
         self.win32_message = error_string
 
@@ -96,8 +108,8 @@ class OSFile(object):
 
     def __init__(self, path, access=IOCTL_ACCESS, share=IOCTL_SHARE,
                  creation_disposition=IOCTL_CREATION, flags=0):
-        self.path = path
-        self.handle = CreateFile(path, access, share, 0, creation_disposition, flags, 0)
+        self.path = unicode(path)
+        self.handle = CreateFile(self.path, access, share, 0, creation_disposition, flags, 0)
         if self.handle == -1:
             raise AsiWin32OSError(GetLastError(), "CreateFile for path %s failed" % path)
 
@@ -278,9 +290,11 @@ class Win32CommandExecuter(CommandExecuterBase):
     def _os_receive(self):
         spt = self.incoming_packets.pop()
         if spt.ScsiStatus != 0:
-            # TODO: check sense buffer.
+            if spt.ScsiStatus == SCSISTAT_CHECK_CONDITION:
+                yield (self._check_condition(string_at(spt.sense_buffer, SENSE_SIZE)), spt.packet_id)
+                raise StopIteration()
             yield (AsiSCSIError("SCSI response status is not zero: %d" % (spt.ScsiStatus,)), spt.packet_id)
-
+            raise StopIteration()
         data = None
         if spt.DataIn == SCSI_IOCTL_DATA_IN and spt.DataTransferLength != 0:
             data = spt.data_buffer.raw[0:spt.DataTransferLength]

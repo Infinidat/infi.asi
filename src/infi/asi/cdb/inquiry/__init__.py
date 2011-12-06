@@ -2,7 +2,7 @@ from .. import CDB
 from ... import SCSIReadCommand
 from ..operation_code import OperationCode
 from ..control import Control, DEFAULT_CONTROL
-from infi.instruct import UBInt8, BitFields, BitPadding, BitField, BitFlag, Struct
+from infi.instruct import UBInt8, UBInt16, BitFields, BitPadding, BitField, BitFlag, Struct
 from infi.instruct import Padding, Field, ConstField
 from infi.instruct.errors import InstructError
 
@@ -26,8 +26,7 @@ class InquiryCommand(CDB):
             BitPadding(7)
         ),
         UBInt8("page_code"),
-        Padding(1),
-        UBInt8("allocation_length"),
+        UBInt16("allocation_length"),
         Field("control", Control, DEFAULT_CONTROL)
     ]
 

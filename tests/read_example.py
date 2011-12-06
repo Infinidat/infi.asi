@@ -26,8 +26,7 @@ try:
     possible_commands = {6: Read6Command,
                          10: Read10Command}
 
-    cdb = possible_commands[cdb_size].create(logical_block_address=offset,
-                                             transfer_length=length)
+    cdb = possible_commands[cdb_size](logical_block_address=offset, transfer_length=length)
     data = sync_wait(cdb.execute(executer))
 
     print(repr(data))
