@@ -63,8 +63,9 @@ class Read10Command(CDB):
                 Field("control", Control, DEFAULT_CONTROL)
                 ]
 
-    def __init__(self, block_size=DEFAULT_BLOCK_SIZE):
+    def __init__(self, logical_block_address, block_size=DEFAULT_BLOCK_SIZE):
         super(Read10Command, self).__init__()
+        self.logical_block_address = logical_block_address
         self.block_size = block_size
 
     def execute(self, executer):
