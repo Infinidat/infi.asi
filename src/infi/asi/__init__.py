@@ -17,6 +17,7 @@ SCSI_STATUS_ACA_ACTIVE           = 0x30
 SCSI_STATUS_TASK_ABORTED         = 0x40
 
 DEFAULT_MAX_QUEUE_SIZE = 15
+DEFAULT_TIMEOUT = 30 * 1000
     
 class SCSICommand(object):
     def __init__(self, command):
