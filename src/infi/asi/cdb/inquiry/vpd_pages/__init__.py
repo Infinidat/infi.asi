@@ -28,5 +28,5 @@ SUPPORTED_VPD_PAGES_COMMANDS = {
 }
 
 def get_vpd_page(page_code):
-    return SUPPORTED_VPD_PAGES_COMMANDS.get(page_code, UnknownVPDPageCommand)
+    return SUPPORTED_VPD_PAGES_COMMANDS.get(page_code, UnknownVPDPageCommand(page_code))
 
