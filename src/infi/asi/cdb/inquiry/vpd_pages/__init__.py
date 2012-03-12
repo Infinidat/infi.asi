@@ -17,8 +17,7 @@ from .device_identification import DeviceIdentificationVPDPageCommand
 from .supported_pages import SupportedVPDPagesCommand
 from .block_limits import BlockLimitsPageCommand
 from .veritas import VeritasVPDPageCommand
-
-# TODO should we have a default page parser that creates a string of the entire page?
+from .unknown import UnknownVPDPageCommand
 
 SUPPORTED_VPD_PAGES_COMMANDS = {
     INQUIRY_PAGE_SUPPORTED_VPD_PAGES: SupportedVPDPagesCommand,
@@ -27,3 +26,6 @@ SUPPORTED_VPD_PAGES_COMMANDS = {
     INQUIRY_PAGE_BLOCK_LIMITS: BlockLimitsPageCommand,
     INQUIRY_PAGE_VERITAS: VeritasVPDPageCommand
 }
+
+SUPPORTED_VPD_PAGES_COMMANDS.setdefault(UnknownVPDPageCommand)
+
