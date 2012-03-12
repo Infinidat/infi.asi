@@ -27,5 +27,6 @@ SUPPORTED_VPD_PAGES_COMMANDS = {
     INQUIRY_PAGE_VERITAS: VeritasVPDPageCommand
 }
 
-SUPPORTED_VPD_PAGES_COMMANDS.setdefault(UnknownVPDPageCommand)
+def get_vpd_page(page_code):
+    return SUPPORTED_VPD_PAGES_COMMANDS.get(page_code, UnknownVPDPageCommand)
 
