@@ -1,11 +1,10 @@
-from infi.instruct import Struct, FixedSizeString, UBInt8, UBInt16, SumSizeArray, Field
-from infi.instruct import FuncStructSelectorMarshal, StructFunc, ReadPointer
+from infi.instruct import Struct, UBInt8, UBInt16, SumSizeArray, Field
+from infi.instruct import FuncStructSelectorMarshal, StructFunc
 from infi.instruct.errors import InstructError
 
 from . import designators
 from ... import PeripheralDeviceData
 from .. import EVPDInquiryCommand
-from infi.asi.cdb.inquiry.vpd_pages.device_identification.designators import SCSINameDesignator
 
 def _get_designator_header(stream, context):
     header = designators.DescriptorHeader.create_from_stream(stream, context)
@@ -38,6 +37,9 @@ class DeviceIdentificationVPDPageData(Struct):
             return _determine_eui_designator(header)
         if header.designator_type == 0x03:
             return _determine_naa_designator(stream, context)
+        if header.designator_type >= 0x09 and header.designator_type <= 0x0F:
+            # Reserved designator, we ignore it.
+            return designators.Reserved_Designator
         raise InstructError("unknown designator type: %d" % header.designator_type)
 
     _fields_ = [
