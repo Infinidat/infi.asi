@@ -17,6 +17,11 @@ DescriptorHeaderFields = DescriptorHeaderFieldsWithoutLength + [UBInt8("designat
 class DescriptorHeader(Struct):
     _fields_ = DescriptorHeaderFields
 
+# spc4r30, section 7.8.5.1, page 612
+# Designator types 09-0F are reserved
+class Reserved_Designator(Struct):
+    _fields_ = DescriptorHeaderFields + [ VarSizeString("designator", ReadPointer("designator_length")) ]
+
 # spc4r30, section 7.8.5.5.2, page 617
 class EUI64_Designator(Struct):
     _fields_ = DescriptorHeaderFields + \

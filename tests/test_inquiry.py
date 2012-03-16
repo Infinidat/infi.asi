@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import unittest
 from glob import glob
 from infi.unittest import TestCase
 from infi.unittest.parameters import iterate
@@ -21,6 +22,16 @@ class LinuxInquiryTestCase(TestCase):
         from infi.asi.coroutines.sync_adapter import sync_wait
         from os import open, O_RDWR
         from infi.asi.unix import OSFile
+
+        # Make sure it's a disk (and not a CD-ROM) - disks should be sdX. We're traversing sysfs from the scsi_generic
+        # to the block device.
+        for scsi_id_path in glob('/sys/class/scsi_generic/*'):
+            if scsi_id_path.split('/')[-1] == path.split('/')[-1]:
+                block_device = glob(scsi_id_path + '/device/block/*')[0].split('/')[-1]
+                if not block_device.startswith('sd'):
+                    raise unittest.SkipTest()
+                break
+
         f = OSFile(open(path, O_RDWR))
         executer = create_platform_command_executer(f)
         cdb = command()
