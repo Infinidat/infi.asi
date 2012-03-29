@@ -140,7 +140,7 @@ class SGIO(Structure):
         self.command_buffer = create_string_buffer(command, len(command))
         self.cmdp = cast(self.command_buffer, c_void_p)
         self.cmd_len = sizeof(self.command_buffer)
-        
+
     def set_data_buffer(self, buf):
         if buf is not None:
             self.data_buffer = buf
@@ -149,7 +149,7 @@ class SGIO(Structure):
         else:
             self.dxfer_len = 0
             self.dxferp = 0
-            
+
     def to_raw(self):
         return self.source_buffer.raw
 
@@ -195,6 +195,10 @@ class SGIO(Structure):
         sgio.source_buffer = buf
         return sgio
 
+    @classmethod
+    def sizeof(cls):
+        return sizeof(cls)
+
 class LinuxCommandExecuter(CommandExecuterBase):
     def __init__(self, io, max_queue_size=DEFAULT_MAX_QUEUE_SIZE, timeout=DEFAULT_TIMEOUT):
         super(LinuxCommandExecuter, self).__init__(max_queue_size)
@@ -208,7 +212,7 @@ class LinuxCommandExecuter(CommandExecuterBase):
         yield self.io.write(os_data.to_raw())
 
     def _os_receive(self):
-        raw = yield self.io.read(sizeof(SGIO))
+        raw = yield self.io.read(SGIO.sizeof())
 
         response_sgio = SGIO.from_string(raw)
 
@@ -221,14 +225,14 @@ class LinuxCommandExecuter(CommandExecuterBase):
             raise StopIteration()
 
         if response_sgio.status != 0:
-            yield (AsiSCSIError(("SCSI response status is not zero: 0x%02x " + 
-                                 "(driver status: 0x%02x, host status: %0x%02x)") % 
+            yield (AsiSCSIError(("SCSI response status is not zero: 0x%02x " +
+                                 "(driver status: 0x%02x, host status: 0x%02x)") %
                                 (response_sgio.status, response_sgio.driver_status, response_sgio.host_status)),
                    packet_id)
             raise StopIteration()
 
         if (response_sgio.driver_status & 0x0F) != 0:
-            yield (AsiSCSIError("SCSI driver response status is not zero: 0x%02x (host status: 0x%02x)" % 
+            yield (AsiSCSIError("SCSI driver response status is not zero: 0x%02x (host status: 0x%02x)" %
                                 (response_sgio.driver_status, response_sgio.host_status)), packet_id)
             raise StopIteration()
 
