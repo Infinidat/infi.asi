@@ -39,4 +39,4 @@ def get_vpd_page(page_code):
     return SUPPORTED_VPD_PAGES_COMMANDS.get(page_code, UnknownVPDPageCommand(page_code))
 
 def get_vpd_page_data(page_code):
-    return SUPPORTED_VPD_PAGES_DATA.get(page_page, UnknownVPDPageData)
+    return SUPPORTED_VPD_PAGES_DATA.get(page_code, UnknownVPDPageData)
