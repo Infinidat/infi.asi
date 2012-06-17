@@ -2,6 +2,9 @@ from . import CommandExecuterBase, DEFAULT_MAX_QUEUE_SIZE, DEFAULT_TIMEOUT, SCSI
 from . import SCSI_STATUS_CHECK_CONDITION
 from .errors import AsiSCSIError
 from ctypes import *
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 """
 From /usr/include/scsi/sg.h
@@ -221,6 +224,8 @@ class LinuxCommandExecuter(CommandExecuterBase):
 
         if (response_sgio.status & SCSI_STATUS_CHECK_CONDITION) != 0 or \
                 (response_sgio.driver_status & SG_ERR_DRIVER_SENSE != 0):
+            logger.debug("response_sgio.status = 0x{:x}".format(response_sgio.status))
+            logger.debug("response_sgio.driver_status = 0x{:x}".format(response_sgio.driver_status))
             yield (self._check_condition(string_at(response_sgio.sbp, SENSE_SIZE)), packet_id)
             raise StopIteration()
 

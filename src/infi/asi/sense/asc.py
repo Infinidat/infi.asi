@@ -684,7 +684,7 @@ class AdditionalSenseCode(Struct):
     @property
     def code_name(self):
         combined_code = struct.pack(">BB", self.code, self.qualifier)
-        return ASC_CODES[combined_code]
+        return ASC_CODES.get(combined_code, "Unknown code, qualifier: {}, {}".format(self.code, self.qualifier))
 
     def to_repr(self, context=None):
         return "AdditionalSenseCode(%s: code=0x%02x, qualifier=0x%02x)" % (self.code_name, self.code, self.qualifier)
