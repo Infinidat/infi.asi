@@ -1,0 +1,80 @@
+Overview
+========
+
+A cross-platform, asynchornous, SCSI interface in Python. In other words, you can use ASI to send SCSI commands.
+
+Usage
+-----
+
+In this example, we will send a standard inquiry commands in a sync fashion.
+First, we will create context managers that will handle the device open/close:
+
+```python
+from contextlib import contextmanager
+from os import O_RDWR, open
+from infi.asi import create_platform_command_executer
+
+@contextmanager
+def asi_context_linux(device_path):
+    from infi.asi.unix import OSFile
+    handle = OSFile(open(device_path, O_RDWR))
+    executer = create_platform_command_executer(handle)
+    try:
+        yield executer
+    finally:
+        handle.close()
+
+@contextmanager
+def asi_context_windows(device_path):
+    from infi.asi.win32 import OSFile
+    handle = OSFile(open(device_path))
+    executer = create_platform_command_executer(handle)
+    try:
+        yield executer
+    finally:
+        handle.close()
+```
+
+Now we will use these context managers to send the CDB:
+
+```python
+>>> # Linux
+>>> with asi_context_linux("/dev/sg0") as asi:
+...     command = StandardInquiryCommand()
+...     response = sync_wait(command.execute(asi))
+>>> print repr(response)
+StandardInquiryData(peripheral_device=PeripheralDeviceData(type=5, qualifier=0), <7 bits padding>, rmb=1, version=5, response_data_format=2, hisup=1, normaca=1, <2 bits padding>, additional_length=31, protect=0, <2 bits padding>, 3pc=0, tpgs=0, acc=0, sccs=0, addr16=0, <3 bits padding>, multi_p=0, vs1=0, enc_serv=0, <1 bits padding>, vs2=0, cmd_que=0, <2 bits padding>, sync=0, wbus16=0, <2 bits padding>, t10_vendor_identification='NECVMWar', product_identification='VMware IDE CDR10', product_revision_level='1.00', extended=<none>)
+```
+
+On Windows, just use the other context manager.
+
+Extending ASI for other CDBs is easy.
+ASI translates SCSI check conditions and unit attentions to pretty exceptions. Here's an example:
+```python
+>>> from infi.asi.cdb.inquiry.vpd_pages.device_identification import DeviceIdentificationVPDPageCommand
+>>> from infi.asi.errors import AsiCheckConditionError
+>>> from infi.asi.coroutines.sync_adapter import sync_wait
+>>> with asi_context_linux("/dev/sg2") as asi:
+...     command = DeviceIdentificationVPDPageCommand()
+...     try:
+...         response = sync_wait(command.execute(asi))
+...     except AsiCheckConditionError, error:
+...         pass
+>>> print repr(error)
+AsiCheckConditionError("SCSI Check Condition status, sense SCSISenseDataFixed(response_code=SCSISenseResponseCode(code=112, valid=0), <1 bytes padding>, sense_key='ILLEGAL_REQUEST', <1 bits padding>, ili=0, eom=0, filemark=0, information=0, additional_sense_length=10, command_specific_information=0, additional_sense_code=AdditionalSenseCode(INVALID FIELD IN CDB: code=0x24, qualifier=0x00), field_replaceable_unit_code=0, sense_key_specific_high=64, sksv=1, sense_key_specific_low=0) [700005000000000a00000000240000c00001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000]",)
+```
+
+Checking out the code
+=====================
+
+This project uses buildout, and git to generate setup.py and __version__.py.
+In order to generate these, run:
+
+    python -S bootstrap.py -d -t
+    bin/buildout -c buildout-version.cfg
+    python setup.py develop
+
+In our development environment, we use isolated python builds, by running the following instead of the last command:
+
+    bin/buildout install development-scripts
+
