@@ -23,9 +23,7 @@ class LinuxInquiryTestCase(TestCase):
         from os import open, O_RDWR
         from infi.asi.unix import OSFile
 
-        # Make sure it's a disk (and not a CD-ROM) - disks should be sdX. We're traversing sysfs from the scsi_generic
-        # to the block device.
-        for scsi_id_path in glob('/sys/class/scsi_generic/*'):
+        for scsi_id_path in glob('/sys/class/scsi_disk/*'):
             if scsi_id_path.split('/')[-1] == path.split('/')[-1]:
                 block_device = glob(scsi_id_path + '/device/block/*')[0].split('/')[-1]
                 if not block_device.startswith('sd'):
