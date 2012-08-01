@@ -75,3 +75,69 @@ class Read10Command(CDB):
         result_datagram = yield executer.call(SCSIReadCommand(datagram, self.block_size * self.transfer_length))
 
         yield result_datagram
+
+
+class Read12Command(CDB):
+    _fields_ = [
+                ConstField("opcode", OperationCode(opcode=CDB_OPCODE_READ_12)),
+                BitFields(
+                          BitFlag("RelAdr", 0),
+                          BitPadding(2),
+                          BitFlag("fua", 0),
+                          BitFlag("dpo", 0),
+                          BitField("reserved", 3, 0),                         
+                          ),
+                UBInt32("logical_block_address"),
+                UBInt32("transfer_length"),
+                BitFields(
+                          BitPadding(8)
+                          ),
+                Field("control", Control, DEFAULT_CONTROL)
+                ]
+
+    def __init__(self, logical_block_address, block_size=DEFAULT_BLOCK_SIZE):
+        super(Read12Command, self).__init__()
+        self.logical_block_address = logical_block_address
+        self.block_size = block_size
+
+    def execute(self, executer):
+        assert self.logical_block_address < 2 ** 32
+        assert self.transfer_length < 2 ** 32
+        datagram = self.create_datagram()
+        result_datagram = yield executer.call(SCSIReadCommand(datagram, self.block_size * self.transfer_length))
+
+        yield result_datagram
+
+class Read16Command(CDB):
+    _fields_ = [
+                ConstField("opcode", OperationCode(opcode=CDB_OPCODE_READ_12)),
+                BitFields(
+                          BitPadding(1),
+                          BitFlag("fua_nv", 0),
+                          BitPadding(1),
+                          BitFlag("fua", 0),
+                          BitFlag("dpo", 0),
+                          BitField("reserved", 3, 0),                         
+                          ),
+                UBInt64("logical_block_address"),
+                UBInt32("transfer_length"),
+                BitFields(
+                          BitField("group_number", 5, 0),
+                          BitPadding(2),
+                          BitFlag("mmc4", 0),
+                          ),
+                Field("control", Control, DEFAULT_CONTROL)
+                ]
+
+    def __init__(self, logical_block_address, block_size=DEFAULT_BLOCK_SIZE):
+        super(Read16Command, self).__init__()
+        self.logical_block_address = logical_block_address
+        self.block_size = block_size
+
+    def execute(self, executer):
+        assert self.logical_block_address < 2 ** 64
+        assert self.transfer_length < 2 ** 32
+        datagram = self.create_datagram()
+        result_datagram = yield executer.call(SCSIReadCommand(datagram, self.block_size * self.transfer_length))
+
+        yield result_datagram
