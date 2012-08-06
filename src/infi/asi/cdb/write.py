@@ -102,7 +102,7 @@ class Write12Command(CDB):
                 ]
 
     def __init__(self, logical_block_address, buffer, block_size=DEFAULT_BLOCK_SIZE):
-        super(Write10Command, self).__init__()
+        super(Write12Command, self).__init__()
         self.logical_block_address = logical_block_address
         self.buffer = buffer
         self.block_size = block_size
@@ -137,7 +137,7 @@ class Write16Command(CDB):
                 ]
 
     def __init__(self, logical_block_address, buffer, block_size=DEFAULT_BLOCK_SIZE):
-        super(Write10Command, self).__init__()
+        super(Write16Command, self).__init__()
         self.logical_block_address = logical_block_address
         self.buffer = buffer
         self.block_size = block_size

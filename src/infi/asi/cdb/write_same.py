@@ -31,11 +31,11 @@ class WriteSame10Command(CDB):
                 Field("control", Control, DEFAULT_CONTROL)
                 ]
 
-    def __init__(self, logical_block_address, block_buffer,number_of_blocks=1 ,block_size=DEFAULT_BLOCK_SIZE):
+    def __init__(self, logical_block_address, buffer, number_of_blocks=1 ,block_size=DEFAULT_BLOCK_SIZE):
         super(WriteSame10Command, self).__init__()
-        assert len(block_buffer) == DEFAULT_BLOCK_SIZE, "buffer length {0} is not a multiple of {1}".format(len(block_buffer), DEFAULT_BLOCK_SIZE)
+        assert len(buffer) == DEFAULT_BLOCK_SIZE, "buffer length {0} is not a multiple of {1}".format(len(buffer), DEFAULT_BLOCK_SIZE)
         self.logical_block_address = logical_block_address
-        self.block_buffer = block_buffer
+        self.buffer = buffer
         self.number_of_blocks = number_of_blocks
         
 
@@ -43,7 +43,7 @@ class WriteSame10Command(CDB):
         assert self.logical_block_address < 2 ** 32, "lba > 2**32"
         assert self.number_of_blocks < 2 ** 16 , "number_of_blocks > 2**16"
         datagram = self.create_datagram()
-        result_datagram = yield executer.call(SCSIWriteCommand(datagram, self.block_buffer))
+        result_datagram = yield executer.call(SCSIWriteCommand(datagram, self.buffer))
         yield result_datagram
 
 
@@ -65,11 +65,11 @@ class WriteSame16Command(CDB):
                           BitPadding(3)),
                 Field("control", Control, DEFAULT_CONTROL)
                 ]
-    def __init__(self, logical_block_address, block_buffer,number_of_blocks=1 ,block_size=DEFAULT_BLOCK_SIZE):
+    def __init__(self, logical_block_address, buffer, number_of_blocks=1 ,block_size=DEFAULT_BLOCK_SIZE):
         super(WriteSame16Command, self).__init__()
-        assert len(block_buffer) ==  DEFAULT_BLOCK_SIZE, "buffer length {0} is not a multiple of {1}".format(len(block_buffer), DEFAULT_BLOCK_SIZE)
+        assert len(buffer) ==  DEFAULT_BLOCK_SIZE, "buffer length {0} is not a multiple of {1}".format(len(buffer), DEFAULT_BLOCK_SIZE)
         self.logical_block_address = logical_block_address
-        self.buffer = block_buffer
+        self.buffer = buffer
         self.number_of_blocks = number_of_blocks
 
     def execute(self, executer):
