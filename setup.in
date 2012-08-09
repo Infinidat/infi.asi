@@ -1,4 +1,5 @@
 
+
 SETUP_INFO = dict(
     name = '${project:name}',
     version = '${infi.recipe.template.version:version}',

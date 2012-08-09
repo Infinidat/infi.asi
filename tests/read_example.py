@@ -1,7 +1,7 @@
 import platform
 import sys
 from infi.asi import create_platform_command_executer
-from infi.asi.cdb.read import Read6Command, Read10Command
+from infi.asi.cdb.read import Read6Command, Read10Command, Read12Command, Read16Command
 from infi.asi.coroutines.sync_adapter import sync_wait
 from infi.exceptools import print_exc
 
@@ -24,7 +24,10 @@ try:
 
     executer = create_platform_command_executer(f)
     possible_commands = {6: Read6Command,
-                         10: Read10Command}
+                         10: Read10Command,
+                         12: Read12Command,
+                         16: Read16Command
+                         }
 
     cdb = possible_commands[cdb_size](logical_block_address=offset, transfer_length=length)
     data = sync_wait(cdb.execute(executer))

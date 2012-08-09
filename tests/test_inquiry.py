@@ -23,9 +23,7 @@ class LinuxInquiryTestCase(TestCase):
         from os import open, O_RDWR
         from infi.asi.unix import OSFile
 
-        # Make sure it's a disk (and not a CD-ROM) - disks should be sdX. We're traversing sysfs from the scsi_generic
-        # to the block device.
-        for scsi_id_path in glob('/sys/class/scsi_generic/*'):
+        for scsi_id_path in glob('/sys/class/scsi_disk/*'):
             if scsi_id_path.split('/')[-1] == path.split('/')[-1]:
                 block_device = glob(scsi_id_path + '/device/block/*')[0].split('/')[-1]
                 if not block_device.startswith('sd'):
@@ -108,3 +106,16 @@ class DeviceIdentification(TestCase):
         from logging import debug; debug(len(buffer))
         obj = DeviceIdentificationVPDPageData.create_from_string(buffer)
         self.assertEqual(len(obj.designators_list), 6)
+
+    def test__serial_number(self):
+        """
+        00     0c 80 00 20 37 34 32 62  30 66 30 30 30 30 30 37    ... 742b0f000007
+        10     35 33 36 30 30 30 30 30  30 30 30 30 30 30 30 30    5360000000000000
+        20     30 30 30 00                                         000.        
+        """
+        from infi.asi.cdb.inquiry.vpd_pages.unit_serial_number import UnitSerialNumberVPDPageData
+        buffer = '\x0c\x80\x00\x20\x37\x34\x32\x62\x30\x66\x30\x30\x30\x30\x30\x37\x35\x33\x36\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x00'
+        from logging import debug; debug(len(buffer))
+        obj = UnitSerialNumberVPDPageData.create_from_string(buffer)
+        self.assertEquals(obj.product_serial_number, '742b0f0000075360000000000000000')
+        
