@@ -39,8 +39,11 @@ class Read6Command(CDB):
         self.logical_block_address__lsb = self.logical_block_address & 0xffff
 
         datagram = self.create_datagram()
-
-        result_datagram = yield executer.call(SCSIReadCommand(datagram, self.block_size * self.transfer_length))
+        read_length = self.block_size * self.transfer_length
+        if read_length == 0: # This is only in READ 6
+            # read_length = 256 * self.block_size
+            read_length = 256 * 512
+        result_datagram = yield executer.call(SCSIReadCommand(datagram, read_length))
 
         yield result_datagram
 
