@@ -241,6 +241,13 @@ class LinuxCommandExecuter(CommandExecuterBase):
                                 (response_sgio.driver_status, response_sgio.host_status)), packet_id)
             raise StopIteration()
 
+        if response_sgio.host_status != 0:
+            yield (AsiSCSIError(("SCSI host status is not zero: 0x%02x " +
+                                 "(driver status: 0x%02x, host status: 0x%02x)") %
+                                (response_sgio.status, response_sgio.driver_status, response_sgio.host_status)),
+                   packet_id)
+            raise StopIteration()
+
         data = None
         if request_sgio.dxfer_direction == SG_DXFER_FROM_DEV and request_sgio.dxfer_len != 0:
             data = request_sgio.data_buffer.raw
