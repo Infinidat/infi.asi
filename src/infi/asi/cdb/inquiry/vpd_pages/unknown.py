@@ -14,7 +14,7 @@ class UnknownVPDPageData(Struct):
 def UnknownVPDPageCommand(page_code):
     class UnknownVPDPageCommand(EVPDInquiryCommand):
         def __init__(self):
-            super(UnknownVPDPageCommand, self).__init__(page_code, 255, UnknownVPDPageData)
+            super(UnknownVPDPageCommand, self).__init__(page_code, 2048, UnknownVPDPageData)
     return UnknownVPDPageCommand
 
 __all__ = ["UnknownVPDPageCommand", "UnknownVPDPageData"]
