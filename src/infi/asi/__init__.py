@@ -4,7 +4,7 @@ import platform
 
 from infi.instruct import *
 
-from .errors import AsiException, AsiCheckConditionError
+from .errors import AsiException, AsiCheckConditionError, AsiInternalError
 from .sense import *
 
 SCSI_STATUS_GOOD                 = 0x00
