@@ -23,6 +23,7 @@ class ReportLunsCommand(CDB):
         datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIReadCommand(datagram, self.allocation_length))
         result = ReportLunsPageData.create_from_string(result_datagram)
+        result.lun_list = [item >> 48 for item in result.lun_list]
         yield result
 
     def __init__(self, select_report=0, allocation_length=252):
