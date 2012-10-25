@@ -23,7 +23,7 @@ class ReportLunsCommand(CDB):
     def execute(self, executer):
         datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIReadCommand(datagram, self.allocation_length))
-        result = ReportLunsPageData.create_from_string(result_datagram)
+        result = ReportLunsData.create_from_string(result_datagram)
         result.lun_list = [item >> 48 for item in result.lun_list]
         yield result
 
@@ -31,9 +31,9 @@ class ReportLunsCommand(CDB):
         super(ReportLunsCommand, self).__init__(select_report=select_report,
                                                 allocation_length=allocation_length)
 
-class ReportLunsPageData(Struct):
+class ReportLunsData(Struct):
 	_fields_ = [
         UBInt32("lun_list_length"),
         Padding(4),
-        VarSizeArray("lun_list", ReadPointer("lun_list_length"), UBInt64),
+        SumSizeArray("lun_list", ReadPointer("lun_list_length"), UBInt64),
 	]
