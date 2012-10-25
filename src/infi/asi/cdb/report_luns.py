@@ -7,6 +7,7 @@ from infi.instruct import *
 # spc4r30: 6.37 (page 394)
 
 CDB_OPCODE = 0xA0
+ALLOCATION_SIZE_FOR_256_LUNS = 16384
 
 class ReportLunsCommand(CDB):
     _fields_ = [
@@ -22,16 +23,17 @@ class ReportLunsCommand(CDB):
     def execute(self, executer):
         datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIReadCommand(datagram, self.allocation_length))
-        result = ReportLunsPageData.create_from_string(result_datagram)
+        result = ReportLunsData.create_from_string(result_datagram)
+        result.lun_list = [item >> 48 for item in result.lun_list]
         yield result
 
-    def __init__(self, select_report=0, allocation_length=252):
+    def __init__(self, select_report=0, allocation_length=16384):
         super(ReportLunsCommand, self).__init__(select_report=select_report,
                                                 allocation_length=allocation_length)
 
-class ReportLunsPageData(Struct):
+class ReportLunsData(Struct):
 	_fields_ = [
         UBInt32("lun_list_length"),
         Padding(4),
-        VarSizeArray("lun_list", ReadPointer("lun_list_length"), UBInt64),
+        SumSizeArray("lun_list", ReadPointer("lun_list_length"), UBInt64),
 	]
