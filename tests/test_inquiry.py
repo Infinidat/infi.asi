@@ -21,7 +21,7 @@ class LinuxInquiryTestCase(TestCase):
         from infi.asi import create_platform_command_executer, AsiCheckConditionError
         from infi.asi.coroutines.sync_adapter import sync_wait
         from os import open, O_RDWR
-        from infi.asi.unix import OSFile
+        from infi.asi.unix import UnixFile
 
         for scsi_id_path in glob('/sys/class/scsi_disk/*'):
             if scsi_id_path.split('/')[-1] == path.split('/')[-1]:
@@ -30,7 +30,7 @@ class LinuxInquiryTestCase(TestCase):
                     raise unittest.SkipTest()
                 break
 
-        f = OSFile(open(path, O_RDWR))
+        f = UnixFile(open(path, O_RDWR))
         executer = create_platform_command_executer(f)
         cdb = command()
         try:

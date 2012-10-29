@@ -1,5 +1,4 @@
 from __future__ import print_function
-import platform
 import sys
 from infi.asi import create_platform_command_executer, create_os_file
 from infi.asi.cdb.inquiry.standard import StandardInquiryCommand

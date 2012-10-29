@@ -1,10 +1,10 @@
-import platform
 import sys
 import time
 from infi.asi import create_platform_command_executer
 from infi.asi.unix import OSFile
-from infi.asi.cdb.inquiry import StandardInquiryData, StandardInquiryCommand
+from infi.asi.cdb.inquiry.standard import StandardInquiryData, StandardInquiryCommand
 from infi.asi.coroutines.sync_adapter import sync_wait
+from infi.asi import create_os_file
 from infi.exceptools import print_exc
 
 if len(sys.argv) != 2:
@@ -13,13 +13,7 @@ if len(sys.argv) != 2:
 
 path = sys.argv[1]
 
-if platform.system() == 'Windows':
-    from infi.asi.win32 import OSFile
-    f = OSFile(path)
-else:
-    import os
-    from infi.asi.unix import OSFile
-    f = OSFile(os.open(path, os.O_RDWR))
+f = create_os_file(path)
 
 try:
     executer = create_platform_command_executer(f)
@@ -27,7 +21,7 @@ try:
     iters = 1000
     start_time = time.clock()
     for i in xrange(iters):
-        inquiry = StandardInquiryCommand.create()
+        inquiry = StandardInquiryCommand()
         data = sync_wait(inquiry.execute(executer))
     duration = time.clock() - start_time
 

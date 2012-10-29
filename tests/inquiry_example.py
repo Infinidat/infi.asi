@@ -1,12 +1,11 @@
 from __future__ import print_function
-import platform
 import sys
 from infi.asi import create_platform_command_executer
 from infi.asi.cdb.inquiry.standard import StandardInquiryCommand
 from infi.asi.cdb.inquiry import vpd_pages
 from infi.asi.coroutines.sync_adapter import sync_wait
 from infi.exceptools import print_exc
-
+from infi.asi import create_os_file
 
 if len(sys.argv) != 3:
     sys.stderr.write("usage: %s device_name inquiry_command\n" % sys.argv[0])
@@ -24,13 +23,7 @@ try:
             
     path = sys.argv[1]
 
-    if platform.system() == 'Windows':
-        from infi.asi.win32 import OSFile
-        f = OSFile(path)
-    else:
-        import os
-        from infi.asi.unix import OSFile
-        f = OSFile(os.open(path, os.O_RDWR))
+    f = create_os_file(path)
 
     command = available_commands[sys.argv[2]]
 

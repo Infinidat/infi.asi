@@ -1,7 +1,8 @@
-import platform,sys
+import sys
 from infi.asi import create_platform_command_executer
 from infi.asi.cdb.write_same import  WriteSame10Command
 from infi.asi.coroutines.sync_adapter import sync_wait
+from infi.asi import create_os_file
 from infi.exceptools import print_exc
 
 if len(sys.argv) not in (5, 6):
@@ -10,13 +11,7 @@ if len(sys.argv) not in (5, 6):
 
 path, offset, number_of_blocks, cdb_size , file_for_block= (sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]),sys.argv[5] )
 
-if platform.system() == 'Windows':
-    from infi.asi.win32 import OSFile
-    f = OSFile(path)
-else:
-    import os
-    from infi.asi.unix import OSFile
-    f = OSFile(os.open(path, os.O_RDWR))
+f = create_os_file(path)
 
 try:
 
