@@ -18,6 +18,20 @@ SCSI_STATUS_TASK_ABORTED         = 0x40
 
 DEFAULT_MAX_QUEUE_SIZE = 15
 DEFAULT_TIMEOUT = 30 * 1000
+
+class OSFile(object):
+    pass
+
+class OSAsyncFile(object):
+    pass
+
+class OSAsyncIOToken(object):
+	def get_result(self, block=False):
+		raise NotImplementedError()
+
+class OSAsyncReactor(object):
+    def wait_for(*commands):
+        raise NotImplementedError()
     
 class SCSICommand(object):
     def __init__(self, command):
@@ -171,4 +185,30 @@ def create_platform_command_executer(*args, **kwargs):
     elif system == 'Linux':
         from .linux import LinuxCommandExecuter
         return LinuxCommandExecuter(*args, **kwargs)
+    raise AsiException("Platform %s is not yet supported." % system)
+
+def create_os_file(path, async=False):
+    if async:
+        return create_async_os_file(path)
+    system = platform.system()
+    if system == 'Windows':
+        from .win32 import Win32File
+        return Win32File(path)
+    elif system == 'Linux':
+        from .unix import UnixFile
+        return UnixFile(os.open(path, os.O_RDWR))
+    raise AsiException("Platform %s is not yet supported." % system)
+  
+def create_async_os_file(path):
+    system = platform.system()
+    if system == 'Windows':
+        from .win32 import Win32AsyncFile
+        return Win32AsyncFile(path)
+    raise AsiException("Platform %s is not yet supported." % system)
+    
+def create_os_async_reactor():
+    system = platform.system()
+    if system == 'Windows':
+        from .win32 import Win32AsyncReactor
+        return Win32AsyncReactor()
     raise AsiException("Platform %s is not yet supported." % system)
