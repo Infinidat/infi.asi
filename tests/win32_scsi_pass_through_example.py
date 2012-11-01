@@ -1,9 +1,9 @@
 import os
-from infi.asi.win32 import OSFile
-from infi.asi.cdb.inquiry import StandardInquiryData, StandardInquiryCommand
+from infi.asi import win32
+from infi.asi.cdb.inquiry.standard import StandardInquiryData, StandardInquiryCommand
 from infi.exceptools import print_exc
 from ctypes import *
-from binascii import hexlify, unhexlify
+from binascii import hexlify
 
 DeviceIoControl = windll.kernel32.DeviceIoControl
 GetLastError = windll.kernel32.GetLastError
@@ -59,13 +59,13 @@ class SCSIPassThroughDirect(Structure):
    ]
 
 try:
-    cmd = StandardInquiryCommand.create()
-    cmd_str = StandardInquiryCommand.instance_to_string(cmd)
+    cmd = StandardInquiryCommand()
+    cmd_str = cmd.create_datagram()
     
-    f = OSFile(r"\\.\PHYSICALDRIVE0",
-               OSFile.GENERIC_READ | OSFile.GENERIC_WRITE,
-               OSFile.FILE_SHARE_READ | OSFile.FILE_SHARE_WRITE,
-               OSFile.OPEN_EXISTING)
+    f = win32.Win32File(r"\\.\PHYSICALDRIVE0",
+               win32.GENERIC_READ | win32.GENERIC_WRITE,
+               win32.FILE_SHARE_READ | win32.FILE_SHARE_WRITE,
+               win32.OPEN_EXISTING)
 
     data_buffer = create_string_buffer(96)
     print("[!] SPT length: %d (%d)" % (sizeof(SCSIPassThroughDirect) - SENSE_SIZE, sizeof(SCSIPassThroughDirect)))
@@ -74,7 +74,7 @@ try:
     spt.PathId = 0
     spt.TargetId = 0
     spt.Lun = 0
-    spt.CdbLength = StandardInquiryCommand.sizeof()
+    spt.CdbLength = StandardInquiryCommand.sizeof(cmd)
     spt.SenseInfoLength = SENSE_SIZE
     spt.DataIn = SCSI_IOCTL_DATA_IN
     spt.DataTransferLength = sizeof(data_buffer)

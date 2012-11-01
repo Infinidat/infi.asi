@@ -1,6 +1,8 @@
 import os
 
-class OSFile(object):
+from . import OSFile
+
+class UnixFile(OSFile):
     def __init__(self, fd):
         self.fd = fd
 
@@ -12,3 +14,6 @@ class OSFile(object):
 
     def close(self):
         os.close(self.fd)
+
+# backward compatibility
+OSFile = UnixFile

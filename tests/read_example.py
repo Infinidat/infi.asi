@@ -1,8 +1,8 @@
-import platform
 import sys
 from infi.asi import create_platform_command_executer
 from infi.asi.cdb.read import Read6Command, Read10Command, Read12Command, Read16Command
 from infi.asi.coroutines.sync_adapter import sync_wait
+from infi.asi import create_os_file
 from infi.exceptools import print_exc
 
 if len(sys.argv) != 5:
@@ -12,13 +12,8 @@ if len(sys.argv) != 5:
 path, offset, length, cdb_size = (sys.argv[1], int(sys.argv[2]),
                                   int(sys.argv[3]), int(sys.argv[4]))
 
-if platform.system() == 'Windows':
-    from infi.asi.win32 import OSFile
-    f = OSFile(path)
-else:
-    import os
-    from infi.asi.unix import OSFile
-    f = OSFile(os.open(path, os.O_RDWR))
+
+f = create_os_file(path)
 
 try:
 

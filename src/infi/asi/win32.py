@@ -1,6 +1,8 @@
 from ctypes import *
 from . import CommandExecuterBase, DEFAULT_MAX_QUEUE_SIZE, SCSIReadCommand, SCSIWriteCommand
 from .errors import AsiOSError, AsiSCSIError
+from . import OSAsyncIOToken, OSFile, OSAsyncFile, OSAsyncReactor, DEFAULT_TIMEOUT
+from .coroutines.sync_adapter import AsyncCoroutine
 
 # Taken from Windows DDK
 # WinDDK/7600.16385.1/inc/ddk/scsi.h
@@ -34,6 +36,8 @@ kernel32 = windll.kernel32
 DWORD WINAPI GetLastError(void);
 """
 GetLastError = kernel32.GetLastError
+
+ERROR_IO_PENDING = 997
 
 """
 DWORD WINAPI FormatMessage(
@@ -104,7 +108,7 @@ IOCTL_ACCESS = GENERIC_READ | GENERIC_WRITE
 IOCTL_SHARE = FILE_SHARE_READ | FILE_SHARE_WRITE
 IOCTL_CREATION = OPEN_EXISTING
 
-class OSFile(object):
+class Win32File(OSFile):
 
     def __init__(self, path, access=IOCTL_ACCESS, share=IOCTL_SHARE,
                  creation_disposition=IOCTL_CREATION, flags=0):
@@ -127,6 +131,81 @@ class OSFile(object):
             raise AsiWin32OSError(GetLastError(), "DeviceIoControl %d for path %s failed" % (control_code, self.path))
         return bytes_returned.value
 
+def overlapped_struct_from_event(event):
+    from struct import pack
+    return c_buffer(pack("PPLLP", 0, 0, 0, 0, event))
+        
+class WinAsyncIOToken(OSAsyncIOToken):
+    def __init__(self, file_handle, overlapped_struct, event_handle):
+        self.handle = file_handle
+        self.event = event_handle
+        self.overlapped = overlapped_struct
+        
+    def get_result(self, block=False):
+        result = c_ulong()
+        overlapped_struct = overlapped_struct_from_event(self.event)
+        err = kernel32.GetOverlappedResult(self.handle, byref(self.overlapped), byref(result), block)
+        return result
+        
+class Win32AsyncFile(OSAsyncFile, Win32File):
+    def __init__(self, path, access=IOCTL_ACCESS, share=IOCTL_SHARE,
+                 creation_disposition=IOCTL_CREATION, flags=0):
+        flags |= FILE_FLAG_OVERLAPPED
+        super(Win32AsyncFile, self).__init__(path, access, share, creation_disposition, flags)
+
+    def _create_overlapped_struct(self):
+        self._windows_event_handle = kernel32.CreateEventW(None, True, False, None)
+        self._overlapped_struct = overlapped_struct_from_event(self._windows_event_handle)
+
+    def ioctl(self, control_code, input, input_size, output=None, output_size=0):
+        self._create_overlapped_struct()
+        api_result = DeviceIoControl(self.handle, control_code, input, input_size, output, output_size,
+                                     None, byref(self._overlapped_struct))
+        last_error = GetLastError()
+        if not api_result and last_error == ERROR_IO_PENDING:
+            token = WinAsyncIOToken(self.handle, self._overlapped_struct, self._windows_event_handle)
+            yield token
+        else:
+            raise AsiWin32OSError(GetLastError(), "DeviceIoControl %d for path %s failed" % (control_code, self.path))
+
+def WaitForMultipleObjects(events):
+    from struct import pack
+    event_array = pack("{}P".format(len(events)), *events)
+    result = kernel32.WaitForMultipleObjects(len(events), byref(c_buffer(event_array)), False, DEFAULT_TIMEOUT)
+    if result < 0 or result >= 128:
+        raise AsiWin32OSError(GetLastError(), "WaitForMultipleObjects failed. result={}".format(result))
+    return result
+
+class Win32AsyncReactor(OSAsyncReactor):
+    def _wait_for_events(self, coroutines):
+        events = {coroutine.get_result().event: (command, coroutine) for (command, coroutine) in coroutines.iteritems()}
+        returned_event_index = WaitForMultipleObjects(events.keys())
+        returned_event = events.keys()[returned_event_index]
+        command, coroutine = events[returned_event]
+        coroutine.async_io_complete()
+        return [command]
+    
+    def wait_for(self, *commands):
+        coroutines = {command: AsyncCoroutine(command) for command in commands}
+        non_blocking_commands = commands[:]
+        results_dict = {}
+        
+        while len(coroutines) > 0:
+            for command in non_blocking_commands:
+                coroutine = coroutines[command]
+                coroutine.loop()
+                if coroutine.is_done():
+                    results_dict[command] = coroutine.get_result()
+                    del coroutines[command]
+            if len(coroutines) > 0:
+                non_blocking_commands = self._wait_for_events(coroutines)
+
+        # sort results_dict in the same order as commands
+        results = []
+        for command in commands:
+            results.append(results_dict[command])
+        return results
+            
 """
 Defined in the Windows DDK, under inc/api/ntddscsi.h
 
@@ -300,3 +379,6 @@ class Win32CommandExecuter(CommandExecuterBase):
             data = spt.data_buffer.raw[0:spt.DataTransferLength]
 
         yield (data, spt.packet_id)
+
+# backward compatibility
+OSFile = Win32File
