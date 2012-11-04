@@ -228,19 +228,19 @@ class LinuxCommandExecuter(CommandExecuterBase):
             raise StopIteration()
 
         if response_sgio.status != 0:
-            yield (AsiSCSIError(("SCSI response status is not zero: 0x%02x " +
+            return (AsiSCSIError(("SCSI response status is not zero: 0x%02x " +
                                  "(driver status: 0x%02x, host status: 0x%02x)") %
                                 (response_sgio.status, response_sgio.driver_status, response_sgio.host_status)),
                    packet_id)
             raise StopIteration()
 
         if (response_sgio.driver_status & 0x0F) != 0:
-            yield (AsiSCSIError("SCSI driver response status is not zero: 0x%02x (host status: 0x%02x)" %
+            return (AsiSCSIError("SCSI driver response status is not zero: 0x%02x (host status: 0x%02x)" %
                                 (response_sgio.driver_status, response_sgio.host_status)), packet_id)
             raise StopIteration()
 
         if response_sgio.host_status != 0:
-            yield (AsiSCSIError(("SCSI host status is not zero: 0x%02x " +
+            return (AsiSCSIError(("SCSI host status is not zero: 0x%02x " +
                                  "(driver status: 0x%02x, host status: 0x%02x)") %
                                 (response_sgio.status, response_sgio.driver_status, response_sgio.host_status)),
                    packet_id)
