@@ -214,8 +214,7 @@ class LinuxCommandExecuter(CommandExecuterBase):
     def _os_send(self, os_data):
         yield self.io.write(os_data.to_raw())
 
-    def _os_receive(self):
-        raw = yield self.io.read(SGIO.sizeof())
+    def _handle_raw_response(self, raw):
 
         response_sgio = SGIO.from_string(raw)
 
@@ -254,3 +253,24 @@ class LinuxCommandExecuter(CommandExecuterBase):
 
         yield (data, packet_id)
 
+    def _os_receive(self):
+        raw = yield self.io.read(SGIO.sizeof())
+        yield self._handle_raw_response(raw)
+
+from fcntl import ioctl
+SG_IO = 0x2285
+
+class LinuxIoctlCommandExecuter(LinuxCommandExecuter):
+    def __init__(self, io, max_queue_size=1, timeout=DEFAULT_TIMEOUT):
+        super(LinuxIoctlCommandExecuter, self).__init__(io, max_queue_size, timeout)
+        self.io = io
+        self.timeout = timeout
+
+    def _os_send(self, os_data):
+        self.buffer = os_data.to_raw()
+        ioctl(self.io.fd, SG_IO, self.buffer)
+        yield len(self.buffer)
+
+    def _os_receive(self):
+        raw = yield self.buffer
+        yield self._handle_raw_response(raw)
