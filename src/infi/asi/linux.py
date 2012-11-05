@@ -215,7 +215,6 @@ class LinuxCommandExecuter(CommandExecuterBase):
         yield self.io.write(os_data.to_raw())
 
     def _handle_raw_response(self, raw):
-
         response_sgio = SGIO.from_string(raw)
 
         packet_id = response_sgio.pack_id
@@ -225,23 +224,23 @@ class LinuxCommandExecuter(CommandExecuterBase):
                 (response_sgio.driver_status & SG_ERR_DRIVER_SENSE != 0):
             logger.debug("response_sgio.status = 0x{:x}".format(response_sgio.status))
             logger.debug("response_sgio.driver_status = 0x{:x}".format(response_sgio.driver_status))
-            yield (self._check_condition(string_at(response_sgio.sbp, SENSE_SIZE)), packet_id)
+            return (self._check_condition(string_at(response_sgio.sbp, SENSE_SIZE)), packet_id)
             raise StopIteration()
 
         if response_sgio.status != 0:
-            yield (AsiSCSIError(("SCSI response status is not zero: 0x%02x " +
+            return (AsiSCSIError(("SCSI response status is not zero: 0x%02x " +
                                  "(driver status: 0x%02x, host status: 0x%02x)") %
                                 (response_sgio.status, response_sgio.driver_status, response_sgio.host_status)),
                    packet_id)
             raise StopIteration()
 
         if (response_sgio.driver_status & 0x0F) != 0:
-            yield (AsiSCSIError("SCSI driver response status is not zero: 0x%02x (host status: 0x%02x)" %
+            return (AsiSCSIError("SCSI driver response status is not zero: 0x%02x (host status: 0x%02x)" %
                                 (response_sgio.driver_status, response_sgio.host_status)), packet_id)
             raise StopIteration()
 
         if response_sgio.host_status != 0:
-            yield (AsiSCSIError(("SCSI host status is not zero: 0x%02x " +
+            return (AsiSCSIError(("SCSI host status is not zero: 0x%02x " +
                                  "(driver status: 0x%02x, host status: 0x%02x)") %
                                 (response_sgio.status, response_sgio.driver_status, response_sgio.host_status)),
                    packet_id)
@@ -251,7 +250,7 @@ class LinuxCommandExecuter(CommandExecuterBase):
         if request_sgio.dxfer_direction == SG_DXFER_FROM_DEV and request_sgio.dxfer_len != 0:
             data = request_sgio.data_buffer.raw
 
-        yield (data, packet_id)
+        return (data, packet_id)
 
     def _os_receive(self):
         raw = yield self.io.read(SGIO.sizeof())
