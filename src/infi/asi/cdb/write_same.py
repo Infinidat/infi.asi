@@ -33,7 +33,7 @@ class WriteSame10Command(CDB):
 
     def __init__(self, logical_block_address, buffer, number_of_blocks=1 ,block_size=DEFAULT_BLOCK_SIZE):
         super(WriteSame10Command, self).__init__()
-        assert len(buffer) == DEFAULT_BLOCK_SIZE, "buffer length {0} is not a multiple of {1}".format(len(buffer), DEFAULT_BLOCK_SIZE)
+        assert (len(buffer) %  DEFAULT_BLOCK_SIZE)==0, "buffer length {0} is not a multiple of {1}".format(len(buffer), DEFAULT_BLOCK_SIZE)
         self.logical_block_address = logical_block_address
         self.buffer = buffer
         self.number_of_blocks = number_of_blocks
@@ -67,7 +67,7 @@ class WriteSame16Command(CDB):
                 ]
     def __init__(self, logical_block_address, buffer, number_of_blocks=1 ,block_size=DEFAULT_BLOCK_SIZE):
         super(WriteSame16Command, self).__init__()
-        assert len(buffer) ==  DEFAULT_BLOCK_SIZE, "buffer length {0} is not a multiple of {1}".format(len(buffer), DEFAULT_BLOCK_SIZE)
+        assert (len(buffer) %  DEFAULT_BLOCK_SIZE)==0, "buffer length {0} is not a multiple of {1}".format(len(buffer), DEFAULT_BLOCK_SIZE)
         self.logical_block_address = logical_block_address
         self.buffer = buffer
         self.number_of_blocks = number_of_blocks

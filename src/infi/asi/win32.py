@@ -120,7 +120,7 @@ class Win32File(OSFile):
     def close(self):
         if self.handle == -1:
             return
-        if not CloseHandle(self.handle):
+        if not CloseHandle(c_void_p(self.handle)):
             raise AsiWin32OSError(GetLastError(), "CloseHandle for path %s failed" % self.path)
         self.handle = -1
 

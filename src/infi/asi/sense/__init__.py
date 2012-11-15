@@ -87,3 +87,16 @@ class SCSISenseDataFixed(Struct):
             BitField("sense_key_specific_low", 8)
         )
     ]
+
+
+def get_sense_object_from_buffer(buf):
+    response_code = SCSISenseResponseCode.create_from_string(buf)
+    # spc4r30 4.5:
+    if response_code.code in (0x70, 0x71):
+        sense = SCSISenseDataFixed.create_from_string(buf)
+    elif response_code.code in (0x72, 0x73):
+        sense = SCSISenseDataDescriptorBased.create_from_string(buf)
+    else:
+        return None
+    return sense
+
