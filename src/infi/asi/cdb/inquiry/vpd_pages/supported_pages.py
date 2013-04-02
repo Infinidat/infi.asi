@@ -15,4 +15,4 @@ class SupportedVPDPagesCommand(EVPDInquiryCommand):
     def __init__(self):
         super(SupportedVPDPagesCommand, self).__init__(0x00, 255, SupportedVPDPagesData)
 
-__all__ = ["SupportedVPDPagesCommand, SupportedVPDPagesData"]
+__all__ = ["SupportedVPDPagesCommand", "SupportedVPDPagesData"]
