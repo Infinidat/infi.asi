@@ -16,11 +16,12 @@ try:
         "standard": StandardInquiryCommand,
         "0x80": vpd_pages.UnitSerialNumberVPDPageCommand,
         "0x83": vpd_pages.DeviceIdentificationVPDPageCommand,
+        "0x89": vpd_pages.AtaInformationVPDPageCommand,
     }
 
     if sys.argv[2] not in available_commands:
         raise ValueError("available commands: %s" % repr(available_commands.keys()))
-            
+
     path = sys.argv[1]
 
     f = create_os_file(path)

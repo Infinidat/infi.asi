@@ -7,9 +7,19 @@ from infi.instruct.buffer.compat import buffer_to_struct_adapter
 # sat3r04: 12.4.2
 class AtaIdentifyDevice(Buffer):
     byte_size = 512
-    serial_number = str_field(where=bytes_ref[10*2:20*2])  # word 10-19 in ATA IDENTIFY DEVICE range
-    firmware_revision = str_field(where=bytes_ref[23*2:27*2])  # word 23-26 in ATA IDENTIFY DEVICE range
-    model_number = str_field(where=bytes_ref[27*2:47*2])  # word 27-46 in ATA IDENTIFY DEVICE range
+    # FIXME: The reason for this ugliness is bizare spec definition for these fields.
+    # To do it less ugly, we will need additional abilities in instruct module,
+    # ability define words as big-endian:
+    #    serial_number = str_field(where=bytes_ref[10*2:20*2])  # word 10-19 in ATA IDENTIFY DEVICE range
+    #    firmware_revision = str_field(where=bytes_ref[23*2:27*2])  # word 23-26 in ATA IDENTIFY DEVICE range
+    #    model_number = str_field(where=bytes_ref[27*2:47*2])  # word 27-46 in ATA IDENTIFY DEVICE range
+    serial_number = str_field(where=bytes_ref[21, 20, 23, 22, 25, 24, 27, 26, 29, 28, 31, 30, 33, 32, 35, 34,
+                                              37, 36, 39, 38])  # word 10-19 in ATA IDENTIFY DEVICE range
+    firmware_revision = str_field(where=bytes_ref[47, 46, 49, 48, 51, 50, 53,
+                                                  52])  # word 23-26 in ATA IDENTIFY DEVICE range
+    model_number = str_field(where=bytes_ref[55, 54, 57, 56, 59, 58, 61, 60, 63, 62, 65, 64, 67, 66, 69, 68,
+                                             71, 70, 73, 72, 75, 74, 77, 76, 79, 78, 81, 80, 83, 82, 85, 84,
+                                             87, 86, 89, 88, 91, 90])  # word 27-46 in ATA IDENTIFY DEVICE range
 
 
 class DeviceSignature(Buffer):
@@ -41,7 +51,7 @@ class AtaInformationVPDPageData(Buffer):
 # sat3r04: 12.4.2
 class AtaInformationVPDPageCommand(EVPDInquiryCommand):
     def __init__(self):
-        super(AtaInformationVPDPageCommand, self).__init__(0x89, AtaInformationVPDPageData.byte_size,
+        super(AtaInformationVPDPageCommand, self).__init__(0x89, 512,
                                                            buffer_to_struct_adapter(AtaInformationVPDPageData))
 
 __all__ = ["AtaInformationVPDPageCommand", "AtaInformationVPDPageData"]
