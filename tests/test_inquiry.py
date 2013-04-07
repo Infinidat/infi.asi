@@ -118,4 +118,38 @@ class DeviceIdentification(TestCase):
         from logging import debug; debug(len(buffer))
         obj = UnitSerialNumberVPDPageData.create_from_string(buffer)
         self.assertEquals(obj.product_serial_number, '742b0f0000075360000000000000000')
-        
+
+
+class AtaInformation(TestCase):
+    def test__ata_information(self):
+        """
+      VPD INQUIRY: ATA information page
+  SAT Vendor identification: linux
+  SAT Product identification: libata
+  SAT Product revision level: GH2Z
+  Signature (Device to host FIS):
+ 00     34 80 40 00 01 00 00 00  00 00 00 00 01 00 00 00
+ 10     00 00 00 00
+  ATA command IDENTIFY DEVICE response summary:
+    model: HITACHI HTS725050A7E630
+    serial number:       TF1500Y9HRAM5B
+    firmware revision: GH2ZB390
+  response in hex:
+ 00     045a 3fff c837 0010 0000 0000 003f 0000     .Z ?. .7 .. .. .. .? ..
+ 08     0000 0000 2020 2020 2020 5446 3135 3030     .. ..          TF 15 00
+ 10     5939 4852 414d 3542 0003 ffff 0004 4748     Y9 HR AM 5B .. .. .. GH
+ 18     325a 4233 3930 4849 5441 4348 4920 4854     2Z B3 90 HI TA CH I  HT
+ 20     5337 3235 3035 3041 3745 3633 3020 2020     S7 25 05 0A 7E 63 0
+ 28     2020 2020 2020 2020 2020 2020 2020 8010                          ..
+        """
+        from infi.asi.cdb.inquiry.vpd_pages.ata_information import AtaInformationVPDPageData
+        from infi.instruct.buffer.compat import buffer_to_struct_adapter
+        buffer = "\x00\x89\x028\x00\x00\x00\x00linux   libata          GH2Z4\x80@\x00\x01\x00\x00\x00\x00\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\xec\x00\x00\x00Z\x04\xff?7\xc8\x10\x00\x00\x00\x00\x00?\x00\x00\x00\x00\x00\x00\x00      FT51009YRHMAB5\x03\x00\xff\xff\x04\x00HGZ23B09IHATHC ITH7S5250A0E736 0                \x10\x80\x00@\x00/\x00@\x00\x02\x00"
+        s = buffer_to_struct_adapter(AtaInformationVPDPageData)
+        obj = s.create_from_string(buffer)
+        self.assertEquals(obj.sat_vendor_identification, 'linux')
+        self.assertEquals(obj.sat_product_identification, 'libata')
+        self.assertEquals(obj.sat_product_revision_level, 'GH2Z')
+        self.assertEquals(obj.identify_device.firmware_revision, 'HGZ23B09')
+        self.assertEquals(obj.identify_device.serial_number, '      FT51009YRHMAB5')
+        self.assertEquals(obj.identify_device.model_number, 'IHATHC ITH7S5250A0E736 0')
