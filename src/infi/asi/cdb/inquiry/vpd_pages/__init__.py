@@ -9,10 +9,12 @@ class EVPDInquiryCommand(InquiryCommand):
 INQUIRY_PAGE_SUPPORTED_VPD_PAGES = 0x00
 INQUIRY_PAGE_UNIT_SERIAL_NUMBER = 0x80
 INQUIRY_PAGE_DEVICE_IDENTIFICATION = 0x83
+INQUIRY_PAGE_ATA_INFORMATION = 0x89
 INQUIRY_PAGE_BLOCK_LIMITS = 0xb0
 INQUIRY_PAGE_VERITAS = 0xc0
 
 from .unit_serial_number import UnitSerialNumberVPDPageCommand, UnitSerialNumberVPDPageData
+from .ata_information import AtaInformationVPDPageCommand, AtaInformationVPDPageData
 from .device_identification import DeviceIdentificationVPDPageCommand, DeviceIdentificationVPDPageData
 from .supported_pages import SupportedVPDPagesCommand, SupportedVPDPagesData
 from .block_limits import BlockLimitsPageCommand, BlockLimitsVPDPageData
@@ -23,6 +25,7 @@ SUPPORTED_VPD_PAGES_COMMANDS = {
     INQUIRY_PAGE_SUPPORTED_VPD_PAGES: SupportedVPDPagesCommand,
     INQUIRY_PAGE_UNIT_SERIAL_NUMBER: UnitSerialNumberVPDPageCommand,
     INQUIRY_PAGE_DEVICE_IDENTIFICATION: DeviceIdentificationVPDPageCommand,
+    INQUIRY_PAGE_ATA_INFORMATION: AtaInformationVPDPageCommand,
     INQUIRY_PAGE_BLOCK_LIMITS: BlockLimitsPageCommand,
     INQUIRY_PAGE_VERITAS: VeritasVPDPageCommand
 }
@@ -31,6 +34,7 @@ SUPPORTED_VPD_PAGES_DATA = {
     INQUIRY_PAGE_SUPPORTED_VPD_PAGES: SupportedVPDPagesData,
     INQUIRY_PAGE_UNIT_SERIAL_NUMBER: UnitSerialNumberVPDPageData,
     INQUIRY_PAGE_DEVICE_IDENTIFICATION: DeviceIdentificationVPDPageData,
+    INQUIRY_PAGE_ATA_INFORMATION: AtaInformationVPDPageData,
     INQUIRY_PAGE_BLOCK_LIMITS: BlockLimitsVPDPageData,
     INQUIRY_PAGE_VERITAS: VeritasVPDPageData
 }

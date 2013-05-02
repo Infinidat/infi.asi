@@ -25,3 +25,4 @@ class OperationCode(Struct):
     ])
 
 CDB_OPCODE_INQUIRY = 0x12
+CDB_RECEIVE_DIAGNOSTIC_RESULTS = 0x1C
