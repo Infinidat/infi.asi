@@ -1,7 +1,7 @@
 from ctypes import *
 from . import CommandExecuterBase, DEFAULT_MAX_QUEUE_SIZE, SCSIReadCommand, SCSIWriteCommand
 from .errors import AsiOSError, AsiSCSIError
-from . import OSAsyncIOToken, OSFile, OSAsyncFile, OSAsyncReactor, DEFAULT_TIMEOUT
+from . import OSAsyncIOToken, OSFile, OSAsyncFile, OSAsyncReactor, DEFAULT_TIMEOUT, gevent_support
 from .coroutines.sync_adapter import AsyncCoroutine
 
 # Taken from Windows DDK
@@ -360,6 +360,7 @@ class Win32CommandExecuter(CommandExecuterBase):
     def _os_prepare_to_send(self, command, packet_id):
         return SCSIPassThroughDirect.create(packet_id, command)
 
+    @gevent_support
     def _os_send(self, os_data):
         yield self.io.ioctl(IOCTL_SCSI_PASS_THROUGH_DIRECT,
                             byref(os_data.source_buffer), sizeof(SCSIPassThroughDirect),

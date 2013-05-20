@@ -2,6 +2,7 @@ __import__("pkg_resources").declare_namespace(__name__)
 
 import os
 import platform
+from functools import wraps
 
 from infi.instruct import *
 
@@ -206,3 +207,15 @@ def create_os_async_reactor():
         from .win32 import Win32AsyncReactor
         return Win32AsyncReactor()
     raise AsiException("Platform %s is not yet supported." % system)
+
+def gevent_support(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            from gevent import sleep
+        except ImportError:
+            sleep = lambda *args, **kwargs: None
+        return_value = func(*args, **kwargs)
+        sleep(0.01)
+        return return_value
+    return wrapper

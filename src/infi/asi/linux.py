@@ -1,5 +1,5 @@
 from . import CommandExecuterBase, DEFAULT_MAX_QUEUE_SIZE, DEFAULT_TIMEOUT, SCSIReadCommand, SCSIWriteCommand
-from . import SCSI_STATUS_CHECK_CONDITION
+from . import SCSI_STATUS_CHECK_CONDITION, gevent_support
 from .errors import AsiSCSIError
 from ctypes import *
 from logging import getLogger
@@ -211,6 +211,7 @@ class LinuxCommandExecuter(CommandExecuterBase):
     def _os_prepare_to_send(self, command, packet_index):
         return SGIO.create(packet_index, command, self.timeout)
 
+    @gevent_support
     def _os_send(self, os_data):
         yield self.io.write(os_data.to_raw())
 
@@ -252,6 +253,7 @@ class LinuxCommandExecuter(CommandExecuterBase):
 
         return (data, packet_id)
 
+    @gevent_support
     def _os_receive(self):
         raw = yield self.io.read(SGIO.sizeof())
         yield self._handle_raw_response(raw)
@@ -265,6 +267,7 @@ class LinuxIoctlCommandExecuter(LinuxCommandExecuter):
         self.io = io
         self.timeout = timeout
 
+    @gevent_support
     def _os_send(self, os_data):
         self.buffer = os_data.to_raw()
         ioctl(self.io.fd, SG_IO, self.buffer)
