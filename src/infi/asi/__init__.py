@@ -2,11 +2,15 @@ __import__("pkg_resources").declare_namespace(__name__)
 
 import os
 import platform
-
 from infi.instruct import *
-
+from infi.pyutils.decorators import wraps
 from .errors import AsiException, AsiCheckConditionError, AsiInternalError
 from .sense import *
+
+try:
+    from gevent import sleep as _gevent_friendly_sleep
+except ImportError:
+    _gevent_friendly_sleep = lambda *args, **kwargs: None
 
 SCSI_STATUS_GOOD                 = 0x00
 SCSI_STATUS_CHECK_CONDITION      = 0x02
@@ -33,7 +37,7 @@ class OSAsyncIOToken(object):
 class OSAsyncReactor(object):
     def wait_for(*commands):
         raise NotImplementedError()
-    
+
 class SCSICommand(object):
     def __init__(self, command):
         super(SCSICommand, self).__init__()
@@ -52,7 +56,7 @@ class SCSIWriteCommand(SCSICommand):
 class CommandExecuter(object):
     def call(self, command):
         raise NotImplementedError()
-    
+
     def send(self, command, callback=None):
         raise NotImplementedError()
 
@@ -72,12 +76,12 @@ class CommandExecuterBase(CommandExecuter):
         result = []
         def my_cb(data, exception):
             result.append((data, exception))
-        
+
         yield self.send(command, callback=my_cb)
 
         while len(result) == 0:
             yield self._process_pending_response()
-            
+
         data, exception = result[0]
         if exception is not None:
             raise exception
@@ -94,15 +98,15 @@ class CommandExecuterBase(CommandExecuter):
         packet_index = self._next_packet_index()
 
         os_data = self._os_prepare_to_send(command, packet_index)
-        
+
         self.pending_packets[packet_index] = (os_data, callback)
-        
+
         try:
             yield self._os_send(os_data)
         except:
             del self.pending_packets[packet_index]
             raise
-        
+
     def wait(self):
         while not self.is_queue_empty():
             yield self._process_pending_response()
@@ -112,8 +116,8 @@ class CommandExecuterBase(CommandExecuter):
             raise AsiRequestQueueFullError()
         result = self.packet_index
         self.packet_index = (self.packet_index + 1) % self.max_queue_size
-        return result 
-   
+        return result
+
     def _process_pending_response(self):
         if self.is_queue_empty():
             yield False
@@ -128,7 +132,7 @@ class CommandExecuterBase(CommandExecuter):
             callback(None, result)
         else:
             callback(result, None)
-        
+
         yield True
 
     def _get_os_data(self, packet_index):
@@ -149,7 +153,7 @@ class CommandExecuterBase(CommandExecuter):
     def _check_condition(self, buf):
         sense = get_sense_object_from_buffer(buf)
         return AsiCheckConditionError(buf, sense)
-    
+
 # TODO: maybe add a ReactorCommandExecuter that also adds a "register_response_listener()" that automatically reads
 # the responses and calls a callback.
 
@@ -161,7 +165,7 @@ class CommandExecuterAdapter(CommandExecuter):
 
     def call(self, command):
         return self.call_wrapper(self.executer.call, command)
-    
+
     def send(self, command, callback=None):
         return self.call_wrapper(self.executer.send, command, callback)
 
@@ -192,17 +196,29 @@ def create_os_file(path, async=False):
         from .unix import UnixFile
         return UnixFile(os.open(path, os.O_RDWR))
     raise AsiException("Platform %s is not yet supported." % system)
-  
+
 def create_async_os_file(path):
     system = platform.system()
     if system == 'Windows':
         from .win32 import Win32AsyncFile
         return Win32AsyncFile(path)
     raise AsiException("Platform %s is not yet supported." % system)
-    
+
 def create_os_async_reactor():
     system = platform.system()
     if system == 'Windows':
         from .win32 import Win32AsyncReactor
         return Win32AsyncReactor()
     raise AsiException("Platform %s is not yet supported." % system)
+
+
+def gevent_friendly(func):
+    """asi sends IOCTLs which are blocking and not gevent-friendly
+    if gevent is being used, we would like to give other greenlets a chance to run after IO
+    """
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        return_value = func(*args, **kwargs)
+        _gevent_friendly_sleep(0.01)
+        return return_value
+    return wrapper
