@@ -7,6 +7,11 @@ from infi.pyutils.decorators import wraps
 from .errors import AsiException, AsiCheckConditionError, AsiInternalError
 from .sense import *
 
+try:
+    from gevent import sleep as _gevent_friendly_sleep
+except ImportError:
+    _gevent_friendly_sleep = lambda *args, **kwargs: None
+
 SCSI_STATUS_GOOD                 = 0x00
 SCSI_STATUS_CHECK_CONDITION      = 0x02
 SCSI_STATUS_CONDITION_MET        = 0x04
@@ -206,17 +211,14 @@ def create_os_async_reactor():
         return Win32AsyncReactor()
     raise AsiException("Platform %s is not yet supported." % system)
 
+
 def gevent_friendly(func):
     """asi sends IOCTLs which are blocking and not gevent-friendly
     if gevent is being used, we would like to give other greenlets a chance to run after IO
     """
     @wraps(func)
     def wrapper(*args, **kwargs):
-        try:
-            from gevent import sleep
-        except ImportError:
-            sleep = lambda *args, **kwargs: None
         return_value = func(*args, **kwargs)
-        sleep(0.01)
+        _gevent_friendly_sleep(0.01)
         return return_value
     return wrapper
