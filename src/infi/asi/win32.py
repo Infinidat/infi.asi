@@ -1,7 +1,7 @@
 from ctypes import *
 from . import CommandExecuterBase, DEFAULT_MAX_QUEUE_SIZE, SCSIReadCommand, SCSIWriteCommand
 from .errors import AsiOSError, AsiSCSIError
-from . import OSAsyncIOToken, OSFile, OSAsyncFile, OSAsyncReactor, DEFAULT_TIMEOUT, gevent_support
+from . import OSAsyncIOToken, OSFile, OSAsyncFile, OSAsyncReactor, DEFAULT_TIMEOUT, gevent_friendly
 from .coroutines.sync_adapter import AsyncCoroutine
 
 # Taken from Windows DDK
@@ -134,19 +134,19 @@ class Win32File(OSFile):
 def overlapped_struct_from_event(event):
     from struct import pack
     return c_buffer(pack("PPLLP", 0, 0, 0, 0, event))
-        
+
 class WinAsyncIOToken(OSAsyncIOToken):
     def __init__(self, file_handle, overlapped_struct, event_handle):
         self.handle = file_handle
         self.event = event_handle
         self.overlapped = overlapped_struct
-        
+
     def get_result(self, block=False):
         result = c_ulong()
         overlapped_struct = overlapped_struct_from_event(self.event)
         err = kernel32.GetOverlappedResult(self.handle, byref(self.overlapped), byref(result), block)
         return result
-        
+
 class Win32AsyncFile(OSAsyncFile, Win32File):
     def __init__(self, path, access=IOCTL_ACCESS, share=IOCTL_SHARE,
                  creation_disposition=IOCTL_CREATION, flags=0):
@@ -184,12 +184,12 @@ class Win32AsyncReactor(OSAsyncReactor):
         command, coroutine = events[returned_event]
         coroutine.async_io_complete()
         return [command]
-    
+
     def wait_for(self, *commands):
         coroutines = {command: AsyncCoroutine(command) for command in commands}
         non_blocking_commands = commands[:]
         results_dict = {}
-        
+
         while len(coroutines) > 0:
             for command in non_blocking_commands:
                 coroutine = coroutines[command]
@@ -205,7 +205,7 @@ class Win32AsyncReactor(OSAsyncReactor):
         for command in commands:
             results.append(results_dict[command])
         return results
-            
+
 """
 Defined in the Windows DDK, under inc/api/ntddscsi.h
 
@@ -236,7 +236,7 @@ typedef struct _SCSI_PASS_THROUGH_DIRECT {
     UCHAR DataIn;
     ULONG DataTransferLength;
     ULONG TimeOutValue;
-    
+
     PVOID DataBuffer;
     ULONG SenseInfoOffset;
     UCHAR Cdb[16];
@@ -262,7 +262,7 @@ typedef struct _SCSI_PASS_THROUGH_DIRECT {
 """
 IOCTL_SCSI_PASS_THROUGH_DIRECT = 0x0004D014L
 
-SCSI_IOCTL_DATA_OUT = 0 # Write data to the device 
+SCSI_IOCTL_DATA_OUT = 0 # Write data to the device
 SCSI_IOCTL_DATA_IN = 1 # Read data from the device
 SCSI_IOCTL_DATA_UNSPECIFIED = 2 # No data is transferred
 
@@ -360,11 +360,10 @@ class Win32CommandExecuter(CommandExecuterBase):
     def _os_prepare_to_send(self, command, packet_id):
         return SCSIPassThroughDirect.create(packet_id, command)
 
-    @gevent_support
     def _os_send(self, os_data):
-        yield self.io.ioctl(IOCTL_SCSI_PASS_THROUGH_DIRECT,
-                            byref(os_data.source_buffer), sizeof(SCSIPassThroughDirect),
-                            byref(os_data.source_buffer), sizeof(SCSIPassThroughDirect))
+        yield gevent_friendly(self.io.ioctl)(IOCTL_SCSI_PASS_THROUGH_DIRECT,
+                                            byref(os_data.source_buffer), sizeof(SCSIPassThroughDirect),
+                                            byref(os_data.source_buffer), sizeof(SCSIPassThroughDirect))
         self.incoming_packets.append(os_data)
 
     def _os_receive(self):
