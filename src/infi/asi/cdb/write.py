@@ -33,10 +33,12 @@ class Write6Command(CDB):
         self.block_size = block_size
         self.transfer_length = len(buffer) / block_size
         assert len(buffer) % block_size == 0, "buffer length {0} is not a multiple of {1}".format(len(buffer), block_size)
+        if self.transfer_length == 0:
+            assert len(buffer) == 256 * block_size
 
     def execute(self, executer):
         assert self.logical_block_address < 2 ** 21, "lba > 2**21"
-        assert self.transfer_length < 2 ** 8, "number_of_blocks > 2**8"
+        assert 0 <= self.transfer_length < 2 ** 8, "number_of_blocks should be in range [0, 2**8)"
 
         self.logical_block_address__msb = self.logical_block_address >> 16
         self.logical_block_address__lsb = self.logical_block_address & 0xffff
@@ -76,7 +78,7 @@ class Write10Command(CDB):
 
     def execute(self, executer):
         assert self.logical_block_address < 2 ** 32, "lba > 2**32"
-        assert self.transfer_length < 2 ** 16, "number_of_blocks > 2**16"
+        assert 0 < self.transfer_length < 2 ** 16, "number_of_blocks should be in range [0, 2**16)"
         datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIWriteCommand(datagram, self.buffer))
 
@@ -111,12 +113,12 @@ class Write12Command(CDB):
 
     def execute(self, executer):
         assert self.logical_block_address < 2 ** 32, "lba > 2**32"
-        assert self.transfer_length < 2 ** 32, "number_of_blocks > 2**32"
+        assert 0 < self.transfer_length < 2 ** 32, "number_of_blocks should be in range [0, 2**32)"
         datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIWriteCommand(datagram, self.buffer))
 
         yield result_datagram
-        
+
 class Write16Command(CDB):
     _fields_ = [
                 ConstField("opcode", OperationCode(opcode=CDB_OPCODE_WRITE_16)),
@@ -146,9 +148,9 @@ class Write16Command(CDB):
 
     def execute(self, executer):
         assert self.logical_block_address < 2 ** 64, "lba > 2**64"
-        assert self.transfer_length < 2 ** 32, "number_of_blocks > 2**32"
+        assert 0 <= self.transfer_length < 2 ** 32, "number_of_blocks should be in range [0, 2**32)"
         datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIWriteCommand(datagram, self.buffer))
 
         yield result_datagram
-        
+
