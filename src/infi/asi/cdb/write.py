@@ -38,7 +38,10 @@ class Write6Command(CDB):
 
     def execute(self, executer):
         assert self.logical_block_address < 2 ** 21, "lba > 2**21"
-        assert 0 <= self.transfer_length < 2 ** 8, "number_of_blocks should be in range [0, 2**8)"
+        if self.transfer_length == 0:
+            assert (len(self.buffer) / self.block_size) == 256
+        else:
+            assert self.transfer_length < 2 ** 8, "number_of_blocks should be in range [0, 2**8)"
 
         self.logical_block_address__msb = self.logical_block_address >> 16
         self.logical_block_address__lsb = self.logical_block_address & 0xffff
