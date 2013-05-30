@@ -33,7 +33,7 @@ class Read6Command(CDB):
         
     def execute(self, executer):
         assert self.logical_block_address < 2 ** 21
-        assert self.transfer_length < 2 ** 8
+        assert self.transfer_length < 2 ** 8, "transfer_length should be in range [0,256), instead got: {}".format(self.transfer_length)
 
         self.logical_block_address__msb = self.logical_block_address >> 16
         self.logical_block_address__lsb = self.logical_block_address & 0xffff
