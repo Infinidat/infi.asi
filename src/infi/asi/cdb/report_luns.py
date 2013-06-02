@@ -23,8 +23,13 @@ class ReportLunsCommand(CDB):
     def execute(self, executer):
         datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIReadCommand(datagram, self.allocation_length))
-        result = ReportLunsData.create_from_string(result_datagram)
-        result.lun_list = [item >> 48 for item in result.lun_list]
+        
+        if self.allocation_length != 0:
+            result = ReportLunsData.create_from_string(result_datagram)
+            result.lun_list = [item >> 48 for item in result.lun_list]
+        else:
+            assert not result_datagram,"allocation length 0, should have no result buffer"
+            result = None
         yield result
 
     def __init__(self, select_report=0, allocation_length=16384):

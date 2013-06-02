@@ -219,6 +219,6 @@ def gevent_friendly(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         return_value = func(*args, **kwargs)
-        _gevent_friendly_sleep(0.01)
+        _gevent_friendly_sleep(0)
         return return_value
     return wrapper
