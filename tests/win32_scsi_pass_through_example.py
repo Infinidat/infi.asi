@@ -18,7 +18,7 @@ SENSE_SIZE = 0x12
 
 IOCTL_SCSI_PASS_THROUGH_DIRECT = 0x0004D014L
 
-SCSI_IOCTL_DATA_OUT         = 0 # Write data to the device 
+SCSI_IOCTL_DATA_OUT         = 0 # Write data to the device
 SCSI_IOCTL_DATA_IN          = 1 # Read data from the device
 SCSI_IOCTL_DATA_UNSPECIFIED = 2 # No data is transferred
 
@@ -53,7 +53,7 @@ class SCSIPassThroughDirect(Structure):
         # [in] CDB to send to the target device
         ("Cdb", c_ubyte * 16),
 
-        # sizeof: 16 + 4 + 8 + 4 + 4 + 1 * 7 + 2 = 
+        # sizeof: 16 + 4 + 8 + 4 + 4 + 1 * 7 + 2 =
         # Our sense buffer
         ("sense_buffer", c_ubyte * SENSE_SIZE)
    ]
@@ -61,7 +61,7 @@ class SCSIPassThroughDirect(Structure):
 try:
     cmd = StandardInquiryCommand()
     cmd_str = cmd.create_datagram()
-    
+
     f = win32.Win32File(r"\\.\PHYSICALDRIVE0",
                win32.GENERIC_READ | win32.GENERIC_WRITE,
                win32.FILE_SHARE_READ | win32.FILE_SHARE_WRITE,
@@ -88,7 +88,7 @@ try:
     print("SCSI status before: %x" % spt.ScsiStatus)
     if not DeviceIoControl(f.handle, IOCTL_SCSI_PASS_THROUGH_DIRECT, byref(spt), sizeof(spt),
                            byref(spt), sizeof(spt),
-                           byref(bytes_returned), 0):
+                           byref(bytes_returned), None):
         raise IOError("DeviceIoControl failed [errno=%d, errmsg=%s]" % (GetLastError(), errno_message(GetLastError())))
     print("SCSI status after: %x" % spt.ScsiStatus)
     print("DataTransferLength: %d" % (spt.DataTransferLength,))
