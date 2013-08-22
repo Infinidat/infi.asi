@@ -1,6 +1,6 @@
 from . import CommandExecuterBase, DEFAULT_MAX_QUEUE_SIZE, DEFAULT_TIMEOUT, SCSIReadCommand, SCSIWriteCommand
 from . import SCSI_STATUS_CHECK_CONDITION, gevent_friendly
-from .errors import AsiSCSIError
+from .errors import AsiSCSIError, AsiRequestQueueFullError
 from ctypes import *
 from logging import getLogger
 
@@ -228,6 +228,8 @@ class LinuxCommandExecuter(CommandExecuterBase):
             raise StopIteration()
 
         if response_sgio.status != 0:
+            if response_sgio.host_status == 0x07:
+                return (AsiRequestQueueFullError(), pack_id)
             return (AsiSCSIError(("SCSI response status is not zero: 0x%02x " +
                                  "(driver status: 0x%02x, host status: 0x%02x)") %
                                 (response_sgio.status, response_sgio.driver_status, response_sgio.host_status)),
