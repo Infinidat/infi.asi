@@ -36,3 +36,4 @@ src/infi.asi.egg-info/
 .svn/
 .hg/
 
+bootstrap.py
