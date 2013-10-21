@@ -8,7 +8,6 @@ from ..errors import AsiException
 from infi.instruct import UBInt32
 from cStringIO import StringIO
 from bunch import Bunch
-from construct.core import FormatField
 from infi.instruct.buffer import *
 
 
