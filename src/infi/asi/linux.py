@@ -229,7 +229,7 @@ class LinuxCommandExecuter(CommandExecuterBase):
 
         if response_sgio.status != 0:
             if response_sgio.host_status == 0x07:
-                return (AsiRequestQueueFullError(), pack_id)
+                return (AsiRequestQueueFullError(), packet_id)
             return (AsiSCSIError(("SCSI response status is not zero: 0x%02x " +
                                  "(driver status: 0x%02x, host status: 0x%02x)") %
                                 (response_sgio.status, response_sgio.driver_status, response_sgio.host_status)),
