@@ -23,6 +23,9 @@ class ReadCapacity10Command(CDB):
         Field("control", Control, DEFAULT_CONTROL)
     ]
 
+    def __init__(self, logical_block_address=0, pmi=0):
+        super(ReadCapacity10Command, self).__init__(logical_block_address=logical_block_address,pmi=pmi)
+
     def execute(self, executer):
         allocation_length = 8
         datagram = self.create_datagram()
@@ -30,11 +33,7 @@ class ReadCapacity10Command(CDB):
         result = ReportReadCapacityData10.create_from_string(result_datagram)
         yield result
 
-    def __init__(self, logical_block_address=0, pmi=0):
-        super(ReadCapacity10Command, self).__init__(logical_block_address=logical_block_address,pmi=pmi)
 
-        
-        
 class ReportReadCapacityData10(Struct):
         _fields_ = [
         UBInt32("last_logical_block_address"),
@@ -58,16 +57,17 @@ class ReadCapacity16Command(CDB):
         Field("control", Control, DEFAULT_CONTROL)
     ]
 
-    def execute(self, executer):
+    def __init__(self, logical_block_address=0, pmi=0):
+        super(ReadCapacity16Command, self).__init__(logical_block_address=logical_block_address,pmi=pmi)
         self.allocation_length = 32
+
+    def execute(self, executer):
         datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIReadCommand(datagram, self.allocation_length))
         result = ReportReadCapacityData16.create_from_string(result_datagram)
         yield result
 
-    def __init__(self, logical_block_address=0, pmi=0):
-        super(ReadCapacity16Command, self).__init__(logical_block_address=logical_block_address,pmi=pmi)                                                
-                                                
+
 
 class ReportReadCapacityData16(Struct):
         _fields_ = [
