@@ -30,21 +30,19 @@ class Read6Command(CDB):
         self.logical_block_address = logical_block_address
         self.block_size = block_size
         self.transfer_length = transfer_length
-        
-    def execute(self, executer):
         assert self.logical_block_address < 2 ** 21
         assert self.transfer_length < 2 ** 8, "transfer_length should be in range [0,256), instead got: {}".format(self.transfer_length)
-
         self.logical_block_address__msb = self.logical_block_address >> 16
         self.logical_block_address__lsb = self.logical_block_address & 0xffff
 
+
+    def execute(self, executer):
         datagram = self.create_datagram()
         read_length = self.block_size * self.transfer_length
         if read_length == 0: # This is only in READ 6
             # read_length = 256 * self.block_size
             read_length = 256 * 512
         result_datagram = yield executer.call(SCSIReadCommand(datagram, read_length))
-
         yield result_datagram
 
 class Read10Command(CDB):
@@ -71,13 +69,12 @@ class Read10Command(CDB):
         self.logical_block_address = logical_block_address
         self.block_size = block_size
         self.transfer_length = transfer_length
-
-    def execute(self, executer):
         assert self.logical_block_address < 2 ** 32
         assert self.transfer_length < 2 ** 16
+
+    def execute(self, executer):
         datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIReadCommand(datagram, self.block_size * self.transfer_length))
-
         yield result_datagram
 
 
@@ -104,13 +101,12 @@ class Read12Command(CDB):
         self.logical_block_address = logical_block_address
         self.block_size = block_size
         self.transfer_length = transfer_length
-
-    def execute(self, executer):
         assert self.logical_block_address < 2 ** 32
         assert self.transfer_length < 2 ** 32
+
+    def execute(self, executer):
         datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIReadCommand(datagram, self.block_size * self.transfer_length))
-
         yield result_datagram
 
 class Read16Command(CDB):
@@ -139,11 +135,10 @@ class Read16Command(CDB):
         self.logical_block_address = logical_block_address
         self.block_size = block_size
         self.transfer_length = transfer_length
-        
-    def execute(self, executer):
         assert self.logical_block_address < 2 ** 64
         assert self.transfer_length < 2 ** 32
+
+    def execute(self, executer):
         datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIReadCommand(datagram, self.block_size * self.transfer_length))
-
         yield result_datagram

@@ -31,7 +31,6 @@ class UnmapCommand(CDB):
         block_stream = ''.join(blocks)     
        
         self.header_obj=UnmapParameterListHeader(len(block_stream))
-       
         self.buffer=self.header_obj.datagram +block_stream
         self.parameter_list_length=len(self.buffer)
         
@@ -66,5 +65,4 @@ class UnmapParameterListBlock(CDB):
         super(UnmapParameterListBlock, self).__init__()
         self.unmap_lba=lba
         self.number_of_logical_blocks=number_of_blocks
-        
         self.datagram = self.create_datagram()

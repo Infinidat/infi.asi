@@ -38,8 +38,8 @@ class ReportLunsCommand(CDB):
                                                 allocation_length=allocation_length)
 
 class ReportLunsData(Struct):
-	_fields_ = [
+    _fields_ = [
         UBInt32("lun_list_length"),
         Padding(4),
         SumSizeArray("lun_list", ReadPointer("lun_list_length"), UBInt64),
-	]
+    ]

@@ -37,11 +37,10 @@ class WriteSame10Command(CDB):
         self.logical_block_address = logical_block_address
         self.buffer = buffer
         self.number_of_blocks = number_of_blocks
-        
-
-    def execute(self, executer):
         assert self.logical_block_address < 2 ** 32, "lba > 2**32"
         assert self.number_of_blocks < 2 ** 16 , "number_of_blocks > 2**16"
+
+    def execute(self, executer):
         datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIWriteCommand(datagram, self.buffer))
         yield result_datagram
@@ -71,10 +70,10 @@ class WriteSame16Command(CDB):
         self.logical_block_address = logical_block_address
         self.buffer = buffer
         self.number_of_blocks = number_of_blocks
-
-    def execute(self, executer):
         assert self.logical_block_address < 2 ** 64, "lba > 2**64"
         assert self.number_of_blocks < 2 ** 32, "number_of_blocks > 2**32"
+
+    def execute(self, executer):
         datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIWriteCommand(datagram, self.buffer))
         yield result_datagram
