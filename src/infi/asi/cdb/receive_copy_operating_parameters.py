@@ -1,6 +1,7 @@
 from . import CDBBuffer
 from .. import SCSIReadCommand
 from infi.instruct.buffer import *
+from infi.instruct.buffer.macros import *
 
 
 # spc-4_rev36:415
