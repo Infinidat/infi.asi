@@ -21,7 +21,7 @@ def _determine_naa_designator(stream, context):
     key = naa_header.naa
     if key in designators.NAA_BY_TYPE.keys():
         return designators.NAA_BY_TYPE[key]
-    InstructError("unknown reserved naa field: %d" % key)
+    raise InstructError("unknown reserved naa field: %d" % key)
 
 # spc4r30: 7.8.15 (page 641)
 class DeviceIdentificationVPDPageData(Struct):
