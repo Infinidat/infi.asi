@@ -31,17 +31,16 @@ class Write6Command(CDB):
         self.logical_block_address = logical_block_address
         self.buffer = buffer
         self.block_size = block_size
-        self.transfer_length = len(buffer) / block_size
-        assert len(buffer) % block_size == 0, "buffer length {0} is not a multiple of {1}".format(len(buffer), block_size)
-        if self.transfer_length == 0:
-            assert len(buffer) == 256 * block_size
 
         assert self.logical_block_address < 2 ** 21, "lba > 2**21"
-        if self.transfer_length == 0:
-            assert (len(self.buffer) / self.block_size) == 256
-        else:
-            assert self.transfer_length < 2 ** 8, "number_of_blocks should be in range [0, 2**8)"
+        assert len(buffer) % block_size == 0, "buffer length {0} is not a multiple of {1}".format(len(buffer), block_size)
 
+        num_blocks = len(buffer) / block_size
+        assert 0 < num_blocks <= 256, "number_of_blocks should be in range [1, 2**8]"
+        if num_blocks == 256:
+            self.transfer_length = 0
+        else:
+            self.transfer_length = num_blocks
         self.logical_block_address__msb = self.logical_block_address >> 16
         self.logical_block_address__lsb = self.logical_block_address & 0xffff
 

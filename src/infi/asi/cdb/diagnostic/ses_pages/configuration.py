@@ -1,4 +1,4 @@
-from infi.instruct.buffer import (Buffer, be_int_field, str_field, list_field, bytes_ref, total_size,
+from infi.instruct.buffer import (Buffer, be_int_field, be_uint_field, str_field, list_field, bytes_ref, total_size,
                                   bytearray_field, after_ref, member_func_ref, str_type)
 from . import PCVReceiveDiagnosticResultCommand, DiagnosticDataBuffer
 
@@ -67,7 +67,7 @@ class EnclosureDescriptor(Buffer):
     relative_enclosure_services_process_identifier = be_int_field(where=bytes_ref[0].bits[4:7])
     subenclosure_identifier = be_int_field(where=bytes_ref[1])
     type_descriptor_headers_num = be_int_field(where=bytes_ref[2])
-    enclosure_descriptor_length = be_int_field(where=bytes_ref[3])
+    enclosure_descriptor_length = be_uint_field(where=bytes_ref[3])
     enclosure_logical_identifier = bytearray_field(where=bytes_ref[4:12])
     enclosure_vendor_identification = str_field(where=bytes_ref[12:20])
     product_identification = str_field(where=bytes_ref[20:36])
