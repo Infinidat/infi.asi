@@ -5,18 +5,21 @@ from ..control import Control, DEFAULT_CONTROL
 from infi.instruct import UBInt8, UBInt16, BitFields, BitPadding, BitField, BitFlag, Struct
 from infi.instruct import Field, ConstField
 from infi.instruct.buffer import Buffer, be_int_field, bytes_ref
-from infi.instruct.buffer.compat import buffer_to_struct_adapter
 
 
 # spc4r30: 6.4.2 (page 261)
+class PeripheralDeviceData(Struct):
+    _fields_ = [
+        BitFields(
+            BitField("type", 5),  # 0-4
+            BitField("qualifier", 3),  # 5-7
+        )
+    ]
+
+
 class PeripheralDeviceDataBuffer(Buffer):
-    byte_size = 1
-    type = be_int_field(where=bytes_ref[0].bits[0:5])  # 0-4
+    type = be_int_field(where=bytes_ref[0].bits[0:5])    # 0-4
     qualifier = be_int_field(where=bytes_ref[0].bits[5:8])  # 5-7
-
-
-PeripheralDeviceData = buffer_to_struct_adapter(PeripheralDeviceDataBuffer)
-
 
 from ..operation_code import CDB_OPCODE_INQUIRY
 
