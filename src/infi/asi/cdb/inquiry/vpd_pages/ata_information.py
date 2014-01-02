@@ -36,6 +36,7 @@ class DeviceSignature(Buffer):
 
 
 class AtaInformationVPDPageData(Buffer):
+    byte_size = 572
     peripheral_device = buffer_field(where=bytes_ref[0:], type=PeripheralDeviceDataBuffer)
     page_code = be_int_field(where=bytes_ref[1:2])
     page_length = be_int_field(where=bytes_ref[2:4])
@@ -45,13 +46,13 @@ class AtaInformationVPDPageData(Buffer):
     device_signature = buffer_field(where=bytes_ref[36:56], type=DeviceSignature)  # bytes 36-55
     command_code = be_int_field(where=bytes_ref[56:57])
     # ATA IDENTIFY DEVICE: bytes 60-571
-    identify_device = buffer_field(where=bytes_ref[60:], type=AtaIdentifyDevice)
+    identify_device = buffer_field(where=bytes_ref[60:572], type=AtaIdentifyDevice)
 
 
 # sat3r04: 12.4.2
 class AtaInformationVPDPageCommand(EVPDInquiryCommand):
     def __init__(self):
-        super(AtaInformationVPDPageCommand, self).__init__(0x89, 512,
+        super(AtaInformationVPDPageCommand, self).__init__(0x89, 1024,
                                                            buffer_to_struct_adapter(AtaInformationVPDPageData))
 
 __all__ = ["AtaInformationVPDPageCommand", "AtaInformationVPDPageData"]
