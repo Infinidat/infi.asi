@@ -38,7 +38,7 @@ class EUI64_12Byte_Designator(Struct):
 # spc4r30, section 7.8.5.5.4, page 618
 class EUI64_16Byte_Designator(Struct):
     _fields_ = DescriptorHeaderFields + \
-                [BitFields(BitField("identifier_extension", 8),
+                [BitFields(BitField("identifier_extension", 64),
                            BitField("ieee_company_id", 24),
                            BitField("vendor_specific_extension_identifer", 40))]
 
@@ -110,7 +110,7 @@ class VendorSpecificDesignator(Struct):
 class T10VendorIDDesignator(Struct):
     def _calc_vendor_specific_identifier_size(self, stream, context):
         return self.designator_length - 8
-    
+
     _fields_ = DescriptorHeaderFields + \
                [ FixedSizeString("t10_vendor_identification", 8),
                  VarSizeString("vendor_specific_identifier",
