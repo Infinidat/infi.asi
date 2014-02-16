@@ -126,7 +126,7 @@ class Win32File(OSFile):
 
     def ioctl(self, control_code, input, input_size, output=None, output_size=0):
         bytes_returned = c_ulong(0)
-        if not DeviceIoControl(self.handle, control_code, input, input_size, output or 0, output_size,
+        if not DeviceIoControl(c_void_p(self.handle), control_code, input, input_size, output or 0, output_size,
                                byref(bytes_returned), None):
             raise AsiWin32OSError(GetLastError(), "DeviceIoControl %d for path %s failed" % (control_code, self.path))
         return bytes_returned.value
