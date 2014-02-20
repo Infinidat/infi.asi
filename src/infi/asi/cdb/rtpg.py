@@ -7,7 +7,6 @@ from ..errors import AsiException
 # spc4r30: 6.4.1 (page 259)
 from infi.instruct import UBInt32
 from cStringIO import StringIO
-from bunch import Bunch
 from infi.instruct.buffer import *
 
 
