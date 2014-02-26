@@ -106,9 +106,6 @@ class ConfigurationDiagnosticPagesData(DiagnosticDataBuffer):
                                            unpack_selector=_unpack_type_descriptor_text,
                                            n=member_func_ref(_calc_num_type_descriptor_headers))
 
-    def _calc_num_type_descriptor_headers(self):
-        return sum(o.type_descriptor_headers_num for o in self.enclosure_descriptor_list)
-
 
 class ConfigurationDiagnosticPagesCommand(PCVReceiveDiagnosticResultCommand):
     def __init__(self):
