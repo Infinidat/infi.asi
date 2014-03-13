@@ -37,3 +37,6 @@ src/infi.asi.egg-info/
 .hg/
 
 bootstrap.py
+.cache
+eggs
+parts
