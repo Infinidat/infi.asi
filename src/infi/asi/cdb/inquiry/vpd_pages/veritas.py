@@ -22,7 +22,7 @@ class VeritasVPDPageData(Struct):
 # spc4r30: 7.8.15
 class VeritasVPDPageCommand(EVPDInquiryCommand):
     def __init__(self):
-        super(VeritasVPDPageCommand, self).__init__(0xc0, 255, VeritasVPDPageData)
+        super(VeritasVPDPageCommand, self).__init__(0xc0, 252, VeritasVPDPageData)
 
 __all__ = ["UnitSerialNumberVPDPageCommand", "UnitSerialNumberVPDPageData"]
 

@@ -83,11 +83,13 @@ class StandardInquiryDataBuffer(Buffer):
         return additional_length
 
 StandardInquiryData = buffer_to_struct_adapter(StandardInquiryDataBuffer)
-StandardInquiryDataLength = 260  # maximum size of inquiry and extended data
+
+# spc4r18
+STANDARD_INQUIRY_MINIMAL_DATA_LENGTH = 36 # The standard INQUIRY data (see table 131) shall contain at least 36 bytes.
 
 
 class StandardInquiryCommand(InquiryCommand):
-    def __init__(self, page_code=0, evpd=0, allocation_length=StandardInquiryDataLength):
+    def __init__(self, page_code=0, evpd=0, allocation_length=STANDARD_INQUIRY_MINIMAL_DATA_LENGTH):
         super(StandardInquiryCommand, self).__init__(result_class=StandardInquiryData,
                                                      page_code=page_code, evpd=evpd,
                                                      allocation_length=allocation_length)

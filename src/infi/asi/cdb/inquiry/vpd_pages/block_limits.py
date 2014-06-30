@@ -30,7 +30,7 @@ class BlockLimitsVPDPageData(Struct):
 
 class BlockLimitsPageCommand(EVPDInquiryCommand):
     def __init__(self):
-        super(BlockLimitsPageCommand, self).__init__(0xb0, 255, BlockLimitsVPDPageData)
+        super(BlockLimitsPageCommand, self).__init__(0xb0, 252, BlockLimitsVPDPageData)
 
 __all__ = ["BlockLimitsPageCommand", "BlockLimitsVPDPageData"]
 
