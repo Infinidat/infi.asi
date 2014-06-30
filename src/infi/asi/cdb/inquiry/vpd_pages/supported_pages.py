@@ -13,6 +13,6 @@ class SupportedVPDPagesData(Struct):
 # spc4r30: 7.82 (page 606)
 class SupportedVPDPagesCommand(EVPDInquiryCommand):
     def __init__(self):
-        super(SupportedVPDPagesCommand, self).__init__(0x00, 255, SupportedVPDPagesData)
+        super(SupportedVPDPagesCommand, self).__init__(0x00, 252, SupportedVPDPagesData)
 
 __all__ = ["SupportedVPDPagesCommand", "SupportedVPDPagesData"]

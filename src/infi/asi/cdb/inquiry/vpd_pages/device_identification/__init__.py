@@ -52,6 +52,6 @@ class DeviceIdentificationVPDPageData(Struct):
 # spc4r30: 7.8.5
 class DeviceIdentificationVPDPageCommand(EVPDInquiryCommand):
     def __init__(self):
-        super(DeviceIdentificationVPDPageCommand, self).__init__(0x83, 255, DeviceIdentificationVPDPageData)
+        super(DeviceIdentificationVPDPageCommand, self).__init__(0x83, 252, DeviceIdentificationVPDPageData)
 
 __all__ = ["DeviceIdentificationVPDPageCommand", "DeviceIdentificationVPDPageData"]

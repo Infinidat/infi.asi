@@ -13,7 +13,7 @@ class UnitSerialNumberVPDPageData(Struct):
 # spc4r30: 7.8.15
 class UnitSerialNumberVPDPageCommand(EVPDInquiryCommand):
     def __init__(self):
-        super(UnitSerialNumberVPDPageCommand, self).__init__(0x80, 255, UnitSerialNumberVPDPageData)
+        super(UnitSerialNumberVPDPageCommand, self).__init__(0x80, 252, UnitSerialNumberVPDPageData)
 
 __all__ = ["UnitSerialNumberVPDPageCommand", "UnitSerialNumberVPDPageData"]
 
