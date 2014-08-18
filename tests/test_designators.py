@@ -1,6 +1,6 @@
 import binascii
 
-from infi.asi.cdb.inquiry.vpd_pages.device_identification import DeviceIdentificationVPDPageData
+from infi.asi.cdb.inquiry.vpd_pages.device_identification import DeviceIdentificationVPDPageBuffer
 
 """
 VPD INQUIRY: Device Identification page
@@ -22,6 +22,7 @@ VPD INQUIRY: Device Identification page
 """
 def test_designator_1():
     raw_data = "00830024010300106000402001f45eb566d41cd10000000001140004000000010115000400000001"
-    
-    data = DeviceIdentificationVPDPageData.create_from_string(binascii.unhexlify(raw_data))
+
+    data = DeviceIdentificationVPDPageBuffer()
+    data.unpack(binascii.unhexlify(raw_data))
     print(repr(data))

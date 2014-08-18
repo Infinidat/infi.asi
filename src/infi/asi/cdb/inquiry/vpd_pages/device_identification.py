@@ -1,7 +1,6 @@
 from infi.asi.cdb.inquiry import PeripheralDeviceDataBuffer
 from infi.asi.cdb.inquiry.vpd_pages import EVPDInquiryCommand
 from infi.instruct.buffer import Buffer, buffer_field, list_field, bytes_ref, be_uint_field
-from infi.instruct.buffer.compat import buffer_to_struct_adapter
 from .designators import DesignatorDescriptor, determine_designator
 
 
@@ -14,13 +13,10 @@ class DeviceIdentificationVPDPageBuffer(Buffer):
                                   unpack_selector=determine_designator, unpack_after=page_length)
 
 
-DeviceIdentificationVPDPageData = buffer_to_struct_adapter(DeviceIdentificationVPDPageBuffer)
-
-
 # spc4r30: 7.8.5
 class DeviceIdentificationVPDPageCommand(EVPDInquiryCommand):
     def __init__(self):
-        super(DeviceIdentificationVPDPageCommand, self).__init__(0x83, 252, DeviceIdentificationVPDPageData)
+        super(DeviceIdentificationVPDPageCommand, self).__init__(0x83, 252, DeviceIdentificationVPDPageBuffer)
 
 
-__all__ = ["DeviceIdentificationVPDPageCommand", "DeviceIdentificationVPDPageData"]
+__all__ = ["DeviceIdentificationVPDPageCommand", "DeviceIdentificationVPDPageBuffer"]

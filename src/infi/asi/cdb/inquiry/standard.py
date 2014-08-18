@@ -1,9 +1,6 @@
-from ... import SCSIReadCommand
-from infi.instruct import UBInt8, UBInt16, UBInt32, UBInt64, BitFields, BitPadding, BitField, BitFlag, Struct
-from infi.instruct import Padding, FixedSizeString, Lazy, Field, OptionalField
+from infi.asi.cdb.read import SCSIReadCommand
 from infi.instruct.buffer import (Buffer, buffer_field, bytes_ref, int_field, uint_field, str_field, bytearray_field,
                                   b_uint16, input_buffer_length, min_ref, list_field, self_ref)
-from infi.instruct.buffer.compat import buffer_to_struct_adapter
 from . import InquiryCommand, PeripheralDeviceDataBuffer
 
 # spc4r30: 6.4.1 (page 259)
@@ -31,7 +28,6 @@ class StandardInquiryExtendedDataBuffer(Buffer):
     # bytes_ref[38:60] - reserved
     vendor_specific_2 = bytearray_field(where=bytes_ref[60:], unpack_if=input_buffer_length >= 61)
 
-StandardInquiryExtendedData = buffer_to_struct_adapter(StandardInquiryExtendedDataBuffer)
 
 # spc4r30: 6.4.2 (page 261)
 class StandardInquiryDataBuffer(Buffer):
@@ -82,7 +78,6 @@ class StandardInquiryDataBuffer(Buffer):
             additional_length += len(self.extended.pack())
         return additional_length
 
-StandardInquiryData = buffer_to_struct_adapter(StandardInquiryDataBuffer)
 
 # spc4r18
 STANDARD_INQUIRY_MINIMAL_DATA_LENGTH = 36 # The standard INQUIRY data (see table 131) shall contain at least 36 bytes.
@@ -90,6 +85,6 @@ STANDARD_INQUIRY_MINIMAL_DATA_LENGTH = 36 # The standard INQUIRY data (see table
 
 class StandardInquiryCommand(InquiryCommand):
     def __init__(self, page_code=0, evpd=0, allocation_length=STANDARD_INQUIRY_MINIMAL_DATA_LENGTH):
-        super(StandardInquiryCommand, self).__init__(result_class=StandardInquiryData,
+        super(StandardInquiryCommand, self).__init__(result_class=StandardInquiryDataBuffer,
                                                      page_code=page_code, evpd=evpd,
                                                      allocation_length=allocation_length)

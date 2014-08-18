@@ -12,12 +12,12 @@ class LogicalBlockProvisioningTestCase(unittest.TestCase):
 
     def test_without_provisioning_group_descriptor(self):
         response = '\x00' * 8
-        data = logical_block_provisioning.LogicalBlockProvisioningVPDPageData()
+        data = logical_block_provisioning.LogicalBlockProvisioningVPDPageBuffer()
         data.unpack(response)
         assert data.provisioning_group_descriptor == None
 
     def test_with_vendor_specific_provisioning_group_descriptor(self):
         response = '\x00' * 8 + '\x00'*4
-        data = logical_block_provisioning.LogicalBlockProvisioningVPDPageData()
+        data = logical_block_provisioning.LogicalBlockProvisioningVPDPageBuffer()
         data.unpack(response)
         assert data.provisioning_group_descriptor.vendor_specific_identifier == ''

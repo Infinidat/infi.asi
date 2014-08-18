@@ -72,9 +72,10 @@ class DeviceIdentification(TestCase):
     associated with the target port
       Target port group: 0x2
       """
-        from infi.asi.cdb.inquiry.vpd_pages.device_identification import  DeviceIdentificationVPDPageData
+        from infi.asi.cdb.inquiry.vpd_pages.device_identification import  DeviceIdentificationVPDPageBuffer
         buffer = '\x00\x83\x00$\x01\x03\x00\x10`\x00@ \x01\xf4^\xb5f\xd4\x1c\xc3\x00\x00\x00\x00\x01\x14\x00\x04\x00\x00\x00\x02\x01\x15\x00\x04\x00\x00\x00\x02'
-        obj = DeviceIdentificationVPDPageData.create_from_string(buffer)
+        obj = DeviceIdentificationVPDPageBuffer()
+        obj.unpack(buffer)
         self.assertEqual(len(obj.designators_list), 3)
 
     def test__recorded_example_2(self):
@@ -108,10 +109,11 @@ class DeviceIdentification(TestCase):
     associated with the addressed logical unit
       SCSI name string:
       vol=VGX15S """
-        from infi.asi.cdb.inquiry.vpd_pages.device_identification import  DeviceIdentificationVPDPageData
+        from infi.asi.cdb.inquiry.vpd_pages.device_identification import  DeviceIdentificationVPDPageBuffer
         buffer = '\x00\x83\x00d\x01\x03\x00\x08WB\xb0\xf0\x100\x00\x00\x02\x00\x00\x13ip=251.252.253.254\x00\x01\x14\x00\x04\x00\x00 \x03\x01\x15\x00\x04\x00\x00 \x03\x03\x08\x00\x1dhost=just_for_test_host_name\x00\x03\x08\x00\x0cvol=VGX15S \x00'
         from logging import debug; debug(len(buffer))
-        obj = DeviceIdentificationVPDPageData.create_from_string(buffer)
+        obj = DeviceIdentificationVPDPageBuffer()
+        obj.unpack(buffer)
         self.assertEqual(len(obj.designators_list), 6)
 
     def test__serial_number(self):
@@ -120,10 +122,11 @@ class DeviceIdentification(TestCase):
         10     35 33 36 30 30 30 30 30  30 30 30 30 30 30 30 30    5360000000000000
         20     30 30 30 00                                         000.
         """
-        from infi.asi.cdb.inquiry.vpd_pages.unit_serial_number import UnitSerialNumberVPDPageData
+        from infi.asi.cdb.inquiry.vpd_pages.unit_serial_number import UnitSerialNumberVPDPageBuffer
         buffer = '\x0c\x80\x00\x20\x37\x34\x32\x62\x30\x66\x30\x30\x30\x30\x30\x37\x35\x33\x36\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x00'
         from logging import debug; debug(len(buffer))
-        obj = UnitSerialNumberVPDPageData.create_from_string(buffer)
+        obj = UnitSerialNumberVPDPageBuffer()
+        obj.unpack(buffer)
         self.assertEquals(obj.product_serial_number, '742b0f0000075360000000000000000')
 
 
@@ -210,8 +213,8 @@ class AtaInformation(TestCase):
             "01 00 e0 03 00 00 00 00  00 00 00 00 00 00 00 00" +
             "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00" +
             "00 00 00 00 00 00 00 00  00 00 a5 42")
-        from infi.asi.cdb.inquiry.vpd_pages.ata_information import AtaInformationVPDPageData
-        obj = AtaInformationVPDPageData()
+        from infi.asi.cdb.inquiry.vpd_pages.ata_information import AtaInformationVPDPageBuffer
+        obj = AtaInformationVPDPageBuffer()
         obj.unpack(raw_data)
         self.assertEquals(obj.sat_vendor_identification, 'linux')
         self.assertEquals(obj.sat_product_identification, 'libata')
@@ -303,8 +306,8 @@ class AtaInformation(TestCase):
              "01 00 e0 03 00 00 00 00  00 00 00 00 00 00 00 00" +
              "00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00" +
              "00 00 00 00 00 00 00 00  00 00 a5 19")
-        from infi.asi.cdb.inquiry.vpd_pages.ata_information import AtaInformationVPDPageData
-        obj = AtaInformationVPDPageData()
+        from infi.asi.cdb.inquiry.vpd_pages.ata_information import AtaInformationVPDPageBuffer
+        obj = AtaInformationVPDPageBuffer()
         obj.unpack(raw_data)
         self.assertEquals(obj.sat_vendor_identification, 'LSI')
         self.assertEquals(obj.sat_product_identification, 'LSISS25x0')

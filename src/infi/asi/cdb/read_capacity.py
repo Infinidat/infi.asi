@@ -19,7 +19,7 @@ class ReadCapacity10Command(CDB):
         BitFields(
             BitFlag("pmi", 0),
             BitPadding(7),
-            ),        
+            ),
         Field("control", Control, DEFAULT_CONTROL)
     ]
 
@@ -38,22 +38,22 @@ class ReportReadCapacityData10(Struct):
         _fields_ = [
         UBInt32("last_logical_block_address"),
         UBInt32("block_length_in_bytes"),
-        ]        
-        
-                                                
+        ]
+
+
 class ReadCapacity16Command(CDB):
     _fields_ = [
         ConstField("opcode", OperationCode(opcode=CDB_OPCODE_READCAPACITY_16)),
         BitFields(
-            BitField("service_action", 5, 0x10),            
+            BitField("service_action", 5, 0x10),
             BitPadding(3),
-            ),        
+            ),
         UBInt64("logical_block_address"),
         UBInt32("allocation_length"),
         BitFields(
             BitFlag("pmi", 0),
             BitPadding(7),
-            ),        
+            ),
         Field("control", Control, DEFAULT_CONTROL)
     ]
 
@@ -68,19 +68,18 @@ class ReadCapacity16Command(CDB):
         yield result
 
 
-
 class ReportReadCapacityData16(Struct):
         _fields_ = [
         UBInt64("last_logical_block_address"),
         UBInt32("block_length_in_bytes"),
         BitFields(
             BitFlag("prot_en", 0),
-            BitField("p_type", 3, 0),      
+            BitField("p_type", 3, 0),
             BitPadding(4),
-            ),            
+            ),
         BitFields(
             BitField("logical_blocks_per_physical_block", 4, 0),
-            BitField("p_i_exponenet", 4, 0),      
+            BitField("p_i_exponenet", 4, 0),
             ),
         BitFields(
             BitField("lowest_aligned_lba_msb", 6, 0),
@@ -90,4 +89,4 @@ class ReportReadCapacityData16(Struct):
         UBInt8("lowest_aligned_lba_lsb"),
         Padding(16),
         ]
-	
+
