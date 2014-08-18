@@ -12,8 +12,10 @@ class UnknownVPDPageBuffer(Buffer):
 
 
 # spc4r30: 7.8.15
-class UnknownVPDPageCommand(EVPDInquiryCommand):
-    def __init__(self):
-        super(UnknownVPDPageCommand, self).__init__(page_code, 2048, UnknownVPDPageData)
+def UnknownVPDPageCommand(page_code):
+    class UnknownVPDPageCommand(EVPDInquiryCommand):
+        def __init__(self):
+            super(UnknownVPDPageCommand, self).__init__(page_code, 2048, UnknownVPDPageBuffer)
+    return UnknownVPDPageCommand
 
 __all__ = ["UnknownVPDPageCommand", "UnknownVPDPageBuffer"]
