@@ -7,9 +7,9 @@ from infi.instruct.buffer.macros import b_uint8
 class SupportedVPDPagesBuffer(Buffer):
     peripheral_device = buffer_field(where=bytes_ref[0:], type=PeripheralDeviceDataBuffer)
     page_code = be_uint_field(where=bytes_ref[1])
-    page_length = be_uint_field(where=bytes_ref[2:4])
+    page_length = be_uint_field(where=bytes_ref[3])
 
-    vpd_parameters = list_field(where=bytes_ref[4:], type=b_uint8)
+    vpd_parameters = list_field(where=bytes_ref[4:], type=b_uint8, n=page_length)
 
 
 # spc4r30: 7.82 (page 606)
