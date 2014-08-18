@@ -47,14 +47,14 @@ class NAA_Descriptor(DesignatorDescriptor):
 
 # spc4r30, section 7.8.5.6.2, page 619
 class NAA_IEEE_Extended_Designator(NAA_Descriptor):
-    # vendor_specific_identifier_a = be_uint_field(where=(bytes_ref[5] + bytes_ref[4].bits[0:4]))
+    vendor_specific_identifier_a = be_uint_field(where=(bytes_ref[5] + bytes_ref[4].bits[0:4]))
     ieee_company = be_uint_field(where=bytes_ref[6:9])
     vendor_specific_identifier_b = be_uint_field(where=bytes_ref[9:12])
 
 
 # spc4r30, section 7.8.5.6.2, page 619
 class NAA_Locally_Assigned_Designator(NAA_Descriptor):
-    locally_administered_value = be_uint_field(where=(bytes_ref[12] + bytes_ref[11] + bytes_ref[10] + bytes_ref[9] +
+    locally_administered_value = be_uint_field(where=(bytes_ref[11] + bytes_ref[10] + bytes_ref[9] +
                                                       bytes_ref[8] + bytes_ref[7] + bytes_ref[6] + bytes_ref[5] +
                                                       bytes_ref[4].bits[0:4]))
 
@@ -92,20 +92,20 @@ class MD5LogicalUnitDesignator(DesignatorDescriptor):
 
 # spc4r30, section 7.8.5.11, page 624
 class SCSINameDesignator(DesignatorDescriptor):
-    designator_length = be_uint_field(where=bytes_ref[3], set_before_pack=len_ref(self_ref.designator))
+    designator_length = be_uint_field(where=bytes_ref[3], set_before_pack=len_ref(self_ref.scsi_name_string))
     scsi_name_string = str_field(where=bytes_ref[4:4+designator_length])
 
 
 # spc4r30, section 7.8.5.2.4, page 615
 class VendorSpecificDesignator(DesignatorDescriptor):
-    designator_length = be_uint_field(where=bytes_ref[3], set_before_pack=len_ref(self_ref.designator))
+    designator_length = be_uint_field(where=bytes_ref[3], set_before_pack=len_ref(self_ref.vendor_specific_identifier))
     vendor_specific_identifier = str_field(where=bytes_ref[4:4+designator_length])
 
 
 class T10VendorIDDesignator(DesignatorDescriptor):
-    designator_length = be_uint_field(where=bytes_ref[3], set_before_pack=len_ref(self_ref.designator))
+    designator_length = be_uint_field(where=bytes_ref[3], set_before_pack=len_ref(self_ref.vendor_specific_identifier))
     t10_vendor_identification = str_field(where=bytes_ref[4:12])
-    vendor_specific_identifier = str_field(where=bytes_ref[4:4+designator_length-12])
+    vendor_specific_identifier = str_field(where=bytes_ref[12:4+designator_length-8])
 
 
 EUI64_BY_LENGTH = {
@@ -136,7 +136,7 @@ def _determine_eui_designator(header):
     key = header.designator_length
     if key in EUI64_BY_LENGTH:
         return EUI64_BY_LENGTH[key]
-    raise InstructError("unknown reserved designator length: %d" % key)
+    raise InstructError("unknown reserved designator length: %r" % header)
 
 
 def _determine_naa_designator(buffer):
@@ -160,7 +160,7 @@ def determine_designator(instance, buffer, *args, **kwargs):
         if header.designator_type >= 0x09 and header.designator_type <= 0x0F:
             # Reserved designator, we ignore it.
             return Reserved_Designator
-        raise InstructError("unknown designator type: %d" % header.designator_type)
+        raise InstructError("unknown designator type: %r" % header)
     except:
         logger.exception("failed to determine designator for buffer {!r} / header {!r}".format(buffer, header))
         raise
