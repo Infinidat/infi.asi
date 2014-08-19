@@ -1,7 +1,7 @@
 from .. import CDBBuffer
 from ... import SCSIReadCommand
 from ..control import DEFAULT_CONTROL_BUFFER, ControlBuffer
-from infi.instruct.buffer import bytes_ref, be_int_field, buffer_field
+from infi.instruct.buffer import bytes_ref, be_int_field, buffer_field, be_uint_field
 from ..operation_code import CDB_RECEIVE_DIAGNOSTIC_RESULTS
 
 
@@ -9,7 +9,7 @@ from ..operation_code import CDB_RECEIVE_DIAGNOSTIC_RESULTS
 class ReceiveDiagnosticResultCommand(CDBBuffer):
     opcode = be_int_field(where=bytes_ref[0], set_before_pack=CDB_RECEIVE_DIAGNOSTIC_RESULTS)
     pcv = be_int_field(where=bytes_ref[1].bits[0])
-    page_code = be_int_field(where=bytes_ref[2], sign='unsigned')
+    page_code = be_uint_field(where=bytes_ref[2])
     allocation_length = be_int_field(where=bytes_ref[3:5], sign='unsigned')
     control = buffer_field(type=ControlBuffer, where=bytes_ref[5], set_before_pack=DEFAULT_CONTROL_BUFFER)
 

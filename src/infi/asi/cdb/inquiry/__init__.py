@@ -41,7 +41,8 @@ class InquiryCommand(CDB):
     def execute(self, executer):
         datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIReadCommand(datagram, self.allocation_length))
-        result = self.result_class.create_from_string(result_datagram)
+        result = self.result_class()
+        result.unpack(result_datagram)
         yield result
 
 __all__ = []

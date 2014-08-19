@@ -8,7 +8,7 @@ class BlockLimitsTestCase(unittest.TestCase):
         # TODO find a real response
         from infi.asi.cdb.inquiry.vpd_pages import block_limits
         response = '\x00' * 64
-        block_limits.BlockLimitsVPDPageData.create_from_string(response)
+        block_limits.BlockLimitsVPDPageBuffer().unpack(response)
 
     def test_supported_pages(self):
         from infi.asi.cdb.inquiry.vpd_pages import SUPPORTED_VPD_PAGES_COMMANDS

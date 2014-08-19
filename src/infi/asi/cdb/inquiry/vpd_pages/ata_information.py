@@ -1,7 +1,6 @@
 from .. import PeripheralDeviceDataBuffer
 from . import EVPDInquiryCommand
 from infi.instruct.buffer import Buffer, str_field, bytes_ref, buffer_field, be_int_field
-from infi.instruct.buffer.compat import buffer_to_struct_adapter
 
 
 # sat3r04: 12.4.2
@@ -35,7 +34,7 @@ class DeviceSignature(Buffer):
     sector_count = be_int_field(where=bytes_ref[12:14])
 
 
-class AtaInformationVPDPageData(Buffer):
+class AtaInformationVPDPageBuffer(Buffer):
     byte_size = 572
     peripheral_device = buffer_field(where=bytes_ref[0:], type=PeripheralDeviceDataBuffer)
     page_code = be_int_field(where=bytes_ref[1:2])
@@ -52,7 +51,6 @@ class AtaInformationVPDPageData(Buffer):
 # sat3r04: 12.4.2
 class AtaInformationVPDPageCommand(EVPDInquiryCommand):
     def __init__(self):
-        super(AtaInformationVPDPageCommand, self).__init__(0x89, 1024,
-                                                           buffer_to_struct_adapter(AtaInformationVPDPageData))
+        super(AtaInformationVPDPageCommand, self).__init__(0x89, 1024, AtaInformationVPDPageBuffer)
 
-__all__ = ["AtaInformationVPDPageCommand", "AtaInformationVPDPageData"]
+__all__ = ["AtaInformationVPDPageCommand", "AtaInformationVPDPageBuffer"]

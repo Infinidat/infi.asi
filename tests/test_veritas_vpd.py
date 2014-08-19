@@ -8,7 +8,7 @@ class VeritasTestCase(unittest.TestCase):
         # TODO find a real response
         from infi.asi.cdb.inquiry.vpd_pages import veritas
         response = '\x00' * 6
-        veritas.VeritasVPDPageData.create_from_string(response)
+        veritas.VeritasVPDPageBuffer().unpack(response)
 
     def test_supported_pages(self):
         from infi.asi.cdb.inquiry.vpd_pages import SUPPORTED_VPD_PAGES_COMMANDS
