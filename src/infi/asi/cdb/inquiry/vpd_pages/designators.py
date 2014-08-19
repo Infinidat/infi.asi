@@ -62,7 +62,7 @@ class NAA_Locally_Assigned_Designator(NAA_Descriptor):
 # spc4r30, section 7.8.5.6.4, page 620
 class NAA_IEEE_Registered_Designator(NAA_Descriptor):
     ieee_company_id = be_uint_field(where=(bytes_ref[7].bits[4:8] + bytes_ref[6] + bytes_ref[5] +
-                                          bytes_ref[4].bits[0:4]))
+                                           bytes_ref[4].bits[0:4]))
     vendor_specific_identifier = be_uint_field(where=(bytes_ref[11] + bytes_ref[10] + bytes_ref[9] +
                                                       bytes_ref[8] + bytes_ref[7].bits[0:4]))
 
@@ -85,6 +85,7 @@ class TargetPortGroupDesignator(DesignatorDescriptor):
 # spc4r30, section 7.8.5.9, page 622
 class LogicalUnitGroupDesignator(DesignatorDescriptor):
     logical_unit_group = be_uint_field(where=bytes_ref[6:8])
+
 
 # spc4r30, section 7.8.5.10, page 622
 class MD5LogicalUnitDesignator(DesignatorDescriptor):

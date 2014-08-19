@@ -28,7 +28,7 @@ class LogicalBlockProvisioningVPDPageBuffer(Buffer):
 
 class LogicalBlockProvisioningPageCommand(EVPDInquiryCommand):
     def __init__(self):
-        super(BlockLimitsPageCommand, self).__init__(0xb2, 252, LogicalBlockProvisioningVPDPageBuffer)
+        super(LogicalBlockProvisioningPageCommand, self).__init__(0xb2, 252, LogicalBlockProvisioningVPDPageBuffer)
 
 
 __all__ = ["LogicalBlockProvisioningPageCommand", "LogicalBlockProvisioningVPDPageBuffer"]
