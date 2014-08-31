@@ -1,6 +1,6 @@
 import sys
 from infi.asi import create_platform_command_executer
-from infi.asi.cdb.inquiry.standard import StandardInquiryData, StandardInquiryCommand
+from infi.asi.cdb.inquiry.standard import StandardInquiryCommand
 from infi.asi.coroutines.sync_adapter import sync_wait
 from infi.asi import create_os_file
 from infi.exceptools import print_exc

@@ -1,6 +1,6 @@
 import os
 from infi.asi import win32
-from infi.asi.cdb.inquiry.standard import StandardInquiryData, StandardInquiryCommand
+from infi.asi.cdb.inquiry.standard import StandardInquiryCommand
 from infi.exceptools import print_exc
 from ctypes import *
 from binascii import hexlify
