@@ -76,7 +76,7 @@ class Write10Command(CDB):
         self.transfer_length = len(buffer) / block_size
         assert len(buffer) % block_size == 0, "buffer length {0} is not a multiple of {1}".format(len(buffer), block_size)
         assert self.logical_block_address < 2 ** 32, "lba > 2**32"
-        assert 0 < self.transfer_length < 2 ** 16, "number_of_blocks should be in range [0, 2**16)"
+        assert 0 <= self.transfer_length < 2 ** 16, "number_of_blocks should be in range [0, 2**16)"
 
     def execute(self, executer):
         datagram = self.create_datagram()
