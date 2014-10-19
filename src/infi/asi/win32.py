@@ -347,8 +347,8 @@ class SCSIPassThroughDirect(Structure):
                 spt.dxfer_direction = SCSI_IOCTL_DATA_UNSPECIFIED
                 spt.set_data_buffer(None)
         else:
-            sgio.dxfer_direction = SCSI_IOCTL_DATA_OUT
-            sgio.set_data_buffer(create_string_buffer(command.data, len(command.data)))
+            spt.dxfer_direction = SCSI_IOCTL_DATA_OUT
+            spt.set_data_buffer(create_string_buffer(command.data, len(command.data)))
         return spt
 
 class Win32CommandExecuter(CommandExecuterBase):
