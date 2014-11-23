@@ -150,8 +150,8 @@ class SGIO(Structure):
             self.dxferp = cast(self.data_buffer, c_void_p)
             self.dxfer_len = sizeof(self.data_buffer)
         else:
-            self.dxfer_len = 0
             self.dxferp = 0
+            self.dxfer_len = 0
 
     def to_raw(self):
         return self.source_buffer.raw
