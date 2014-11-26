@@ -177,13 +177,16 @@ class CommandExecuterAdapter(CommandExecuter):
 
 def create_platform_command_executer(*args, **kwargs):
     system = platform.system()
+    CommandExecuterForPlatform = None
     if system == 'Windows':
-        from .win32 import Win32CommandExecuter
-        return Win32CommandExecuter(*args, **kwargs)
+        from .win32 import Win32CommandExecuter as CommandExecuterForPlatform
     elif system == 'Linux':
-        from .linux import LinuxCommandExecuter
-        return LinuxCommandExecuter(*args, **kwargs)
-    raise AsiException("Platform %s is not yet supported." % system)
+        from .linux import LinuxCommandExecuter as CommandExecuterForPlatform
+    elif system == 'SunOS':
+        from .solaris import SolarisCommandExecuter as CommandExecuterForPlatform
+    else:
+        raise AsiException("Platform %s is not yet supported." % system)
+    return CommandExecuterForPlatform(*args, **kwargs)
 
 def create_os_file(path, async=False):
     if async:
@@ -192,7 +195,7 @@ def create_os_file(path, async=False):
     if system == 'Windows':
         from .win32 import Win32File
         return Win32File(path)
-    elif system == 'Linux':
+    elif system in ['Linux', 'SunOS']:
         from .unix import UnixFile
         return UnixFile(os.open(path, os.O_RDWR))
     raise AsiException("Platform %s is not yet supported." % system)
