@@ -1,4 +1,4 @@
-from infi.instruct.buffer import Buffer, be_uint_field, bytes_ref, str_field, len_ref, self_ref
+from infi.instruct.buffer import Buffer, be_uint_field, bytes_ref, str_field, len_ref, self_ref, bytearray_field, buffer_field
 from infi.instruct.errors import InstructError
 from logging import getLogger
 logger = getLogger(__name__)
@@ -89,25 +89,25 @@ class LogicalUnitGroupDesignator(DesignatorDescriptor):
 
 # spc4r30, section 7.8.5.10, page 622
 class MD5LogicalUnitDesignator(DesignatorDescriptor):
-    md5_logical_unit_identifier = str_field(where=bytes_ref[6:8])
+    md5_logical_unit_identifier = bytearray_field(where=bytes_ref[6:8])
 
 
 # spc4r30, section 7.8.5.11, page 624
 class SCSINameDesignator(DesignatorDescriptor):
     designator_length = be_uint_field(where=bytes_ref[3], set_before_pack=len_ref(self_ref.scsi_name_string))
-    scsi_name_string = str_field(where=bytes_ref[4:4+designator_length])
+    scsi_name_string = bytearray_field(where=bytes_ref[4:4+designator_length])
 
 
 # spc4r30, section 7.8.5.2.4, page 615
 class VendorSpecificDesignator(DesignatorDescriptor):
     designator_length = be_uint_field(where=bytes_ref[3], set_before_pack=len_ref(self_ref.vendor_specific_identifier))
-    vendor_specific_identifier = str_field(where=bytes_ref[4:4+designator_length])
+    vendor_specific_identifier = bytearray_field(where=bytes_ref[4:4+designator_length])
 
 
 class T10VendorIDDesignator(DesignatorDescriptor):
     designator_length = be_uint_field(where=bytes_ref[3], set_before_pack=len_ref(self_ref.vendor_specific_identifier))
     t10_vendor_identification = str_field(where=bytes_ref[4:12])
-    vendor_specific_identifier = str_field(where=bytes_ref[12:4+designator_length-8])
+    vendor_specific_identifier = bytearray_field(where=bytes_ref[12:4+designator_length])
 
 
 EUI64_BY_LENGTH = {
