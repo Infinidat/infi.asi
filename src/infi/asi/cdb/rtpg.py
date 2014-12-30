@@ -51,7 +51,7 @@ class RTPGCommand(CDB):
 
 class TargetPortDescriptor(Buffer):
     byte_size = 4
-    relative_target_port_identifier = be_int_field(where=bytes_ref[2:4])
+    relative_target_port_identifier = be_uint_field(where=bytes_ref[2:4])
 
 class TargetPortGroupDescriptor(Buffer):
     asymetric_access_state = be_int_field(where=bytes_ref[0].bits[0:4])
@@ -64,8 +64,8 @@ class TargetPortGroupDescriptor(Buffer):
     #ao_sup = be_int_field(where=bytes_ref[1].bits[5])
     o_sup = be_int_field(where=bytes_ref[1].bits[6])
     t_sup = be_int_field(where=bytes_ref[1].bits[7])
-    
-    target_port_group = be_int_field(where=bytes_ref[2:4])
+
+    target_port_group = be_uint_field(where=bytes_ref[2:4])
 
     target_port_count = be_int_field(where=bytes_ref[7])
     target_port_list = list_field(type=TargetPortDescriptor, where=bytes_ref[8:], n=target_port_count)
