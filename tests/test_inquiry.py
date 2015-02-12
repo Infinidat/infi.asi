@@ -41,7 +41,7 @@ class LinuxInquiryTestCase(TestCase):
         cdb = command()
         try:
             _ = sync_wait(cdb.execute(executer))
-        except AsiCheckConditionError, e:
+        except AsiCheckConditionError as e:
             # Some devices does not support some pages
             # for example, VMware on hba02 does not support 0x83
             if e.sense_obj.sense_key == 'ILLEGAL_REQUEST' \
@@ -73,7 +73,7 @@ class DeviceIdentification(TestCase):
       Target port group: 0x2
       """
         from infi.asi.cdb.inquiry.vpd_pages.device_identification import  DeviceIdentificationVPDPageBuffer
-        buffer = '\x00\x83\x00$\x01\x03\x00\x10`\x00@ \x01\xf4^\xb5f\xd4\x1c\xc3\x00\x00\x00\x00\x01\x14\x00\x04\x00\x00\x00\x02\x01\x15\x00\x04\x00\x00\x00\x02'
+        buffer = b'\x00\x83\x00$\x01\x03\x00\x10`\x00@ \x01\xf4^\xb5f\xd4\x1c\xc3\x00\x00\x00\x00\x01\x14\x00\x04\x00\x00\x00\x02\x01\x15\x00\x04\x00\x00\x00\x02'
         obj = DeviceIdentificationVPDPageBuffer()
         obj.unpack(buffer)
         self.assertEqual(len(obj.designators_list), 3)
@@ -110,7 +110,7 @@ class DeviceIdentification(TestCase):
       SCSI name string:
       vol=VGX15S """
         from infi.asi.cdb.inquiry.vpd_pages.device_identification import  DeviceIdentificationVPDPageBuffer
-        buffer = '\x00\x83\x00d\x01\x03\x00\x08WB\xb0\xf0\x100\x00\x00\x02\x00\x00\x13ip=251.252.253.254\x00\x01\x14\x00\x04\x00\x00 \x03\x01\x15\x00\x04\x00\x00 \x03\x03\x08\x00\x1dhost=just_for_test_host_name\x00\x03\x08\x00\x0cvol=VGX15S \x00'
+        buffer = b'\x00\x83\x00d\x01\x03\x00\x08WB\xb0\xf0\x100\x00\x00\x02\x00\x00\x13ip=251.252.253.254\x00\x01\x14\x00\x04\x00\x00 \x03\x01\x15\x00\x04\x00\x00 \x03\x03\x08\x00\x1dhost=just_for_test_host_name\x00\x03\x08\x00\x0cvol=VGX15S \x00'
         from logging import debug; debug(len(buffer))
         obj = DeviceIdentificationVPDPageBuffer()
         obj.unpack(buffer)
@@ -123,7 +123,7 @@ class DeviceIdentification(TestCase):
         20     30 30 30 00                                         000.
         """
         from infi.asi.cdb.inquiry.vpd_pages.unit_serial_number import UnitSerialNumberVPDPageBuffer
-        buffer = '\x0c\x80\x00\x20\x37\x34\x32\x62\x30\x66\x30\x30\x30\x30\x30\x37\x35\x33\x36\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x00'
+        buffer = b'\x0c\x80\x00\x20\x37\x34\x32\x62\x30\x66\x30\x30\x30\x30\x30\x37\x35\x33\x36\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x30\x00'
         from logging import debug; debug(len(buffer))
         obj = UnitSerialNumberVPDPageBuffer()
         obj.unpack(buffer)

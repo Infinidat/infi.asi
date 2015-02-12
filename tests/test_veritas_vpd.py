@@ -7,7 +7,7 @@ class VeritasTestCase(unittest.TestCase):
     def test_parsing(self):
         # TODO find a real response
         from infi.asi.cdb.inquiry.vpd_pages import veritas
-        response = '\x00' * 6
+        response = b'\x00' * 6
         veritas.VeritasVPDPageBuffer().unpack(response)
 
     def test_supported_pages(self):

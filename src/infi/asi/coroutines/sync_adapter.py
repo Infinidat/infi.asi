@@ -29,9 +29,9 @@ class Coroutine(object):
                 return self._handle_async_io_token()
             else:
                 self.args = self.result
-        except StopIteration, e:
+        except StopIteration as e:
             self.stack.pop()
-        except BaseException, e:
+        except BaseException as e:
             self.tb = sys.exc_info()[2]
             self.stack.pop()
             if len(self.stack) == 0:
