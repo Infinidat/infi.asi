@@ -668,10 +668,10 @@ ASC_CODES = {
     struct.pack(">BB", 0x7F, 0x00): "VENDOR SPECIFIC",
 }
 
-for i in xrange(0x80, 0xFF):
+for i in range(0x80, 0xFF):
     ASC_CODES[struct.pack(">BB", 0x40, i)] = "DIAGNOSTIC FAILURE ON COMPONENT %2X" % (i,)
 
-for i in xrange(0, 0xFF):
+for i in range(0, 0xFF):
     ASC_CODES[struct.pack(">BB", 0x4D, i)] = "TAGGED OVERLAPPED COMMANDS (%2X = TASK TAG)" % (i,)
     ASC_CODES[struct.pack(">BB", 0x70, i)] = "DECOMPRESSION EXCEPTION SHORT ALGORITHM ID OF %2X" % (i,)
 

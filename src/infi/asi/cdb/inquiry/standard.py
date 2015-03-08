@@ -60,9 +60,9 @@ class StandardInquiryDataBuffer(Buffer):
     sync = uint_field(where=bytes_ref[7].bits[4])  # SPC-5 specific
     wbus16 = uint_field(where=bytes_ref[7].bits[5])  # SPC-5 specific
     # bytes_ref[7].bits[6:8] - obsolete
-    t10_vendor_identification = str_field(where=bytes_ref[8:16], padding=' ', justify='left')
-    product_identification = str_field(where=bytes_ref[16:32], padding=' ', justify='left')
-    product_revision_level = str_field(where=bytes_ref[32:36], padding=' ', justify='left')
+    t10_vendor_identification = str_field(where=bytes_ref[8:16], padding=b' ', justify='left')
+    product_identification = str_field(where=bytes_ref[16:32], padding=b' ', justify='left')
+    product_revision_level = str_field(where=bytes_ref[32:36], padding=b' ', justify='left')
 
     extended = buffer_field(StandardInquiryExtendedDataBuffer,
                             where=bytes_ref[36:additional_length + 5],

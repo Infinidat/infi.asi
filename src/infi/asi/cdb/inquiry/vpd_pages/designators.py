@@ -143,7 +143,7 @@ def _determine_eui_designator(header):
 
 def _determine_naa_designator(buffer):
     naa_header = NAA_Descriptor()
-    naa_header.unpack(str(buffer))
+    naa_header.unpack(buffer.to_bytes())
     if naa_header.naa in NAA_BY_TYPE:
         return NAA_BY_TYPE[naa_header.naa]
     raise InstructError("unknown reserved naa field: %d" % naa_header.naa)
@@ -151,7 +151,7 @@ def _determine_naa_designator(buffer):
 
 def determine_designator(instance, buffer, *args, **kwargs):
     header = DesignatorDescriptor()
-    header.unpack(str(buffer))
+    header.unpack(buffer.to_bytes())
     try:
         if header.designator_type in SINGLE_TYPE_DESIGNATORS:
             return SINGLE_TYPE_DESIGNATORS[header.designator_type]
