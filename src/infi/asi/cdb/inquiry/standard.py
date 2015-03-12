@@ -26,7 +26,11 @@ class StandardInquiryExtendedDataBuffer(Buffer):
                                      n=min_ref((input_buffer_length - 22) / 2, 8),  # / 2 because sizeof(uint16) == 2
                                      unpack_if=input_buffer_length >= 24)
     # bytes_ref[38:60] - reserved
-    vendor_specific_2 = bytearray_field(where=bytes_ref[60:], unpack_if=input_buffer_length >= 61)
+    vendor_specific_2 = bytearray_field(where=bytes_ref[60:], unpack_if=input_buffer_length >= 61,
+                                        pack_if=self_ref._has_vendor_specific_2_data())
+
+    def _has_vendor_specific_2_data(self):
+        return self.vendor_specific_2 is not None
 
 
 # spc4r30: 6.4.2 (page 261)
