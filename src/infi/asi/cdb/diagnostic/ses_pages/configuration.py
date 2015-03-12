@@ -89,7 +89,7 @@ class ConfigurationDiagnosticPagesData(DiagnosticDataBuffer):
 
     def _unpack_type_descriptor_text(self, buffer, index, **kwargs):
         l = self.type_descriptor_header_list[index].type_descriptor_text_length
-        return str(buffer[0:l]), l
+        return buffer[0:l].to_bytes(), l
 
     page_code = be_int_field(where=bytes_ref[0])
     secondary_subenclosures_num = be_int_field(where=bytes_ref[1])

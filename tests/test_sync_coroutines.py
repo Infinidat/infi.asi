@@ -35,7 +35,7 @@ def test_using_generator():
         return 5
         
     def bar():
-        for i in xrange(5):
+        for i in range(5):
             yield i
 
     def foo():

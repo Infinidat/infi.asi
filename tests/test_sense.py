@@ -1,5 +1,4 @@
 from infi.asi.sense import SCSISenseDataFixed, SCSI_SENSE_KEY
-from infi.exceptools import print_exc
 
 import binascii
 
