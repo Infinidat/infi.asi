@@ -1,5 +1,5 @@
 from . import CommandExecuterBase, DEFAULT_TIMEOUT, SCSIReadCommand, SCSIWriteCommand
-from . import SCSI_STATUS_CHECK_CONDITION, gevent_friendly
+from . import gevent_friendly
 from .errors import AsiSCSIError, AsiRequestQueueFullError
 from ctypes import *
 from logging import getLogger
