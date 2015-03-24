@@ -1,5 +1,5 @@
 from . import CommandExecuterBase, DEFAULT_MAX_QUEUE_SIZE, DEFAULT_TIMEOUT, SCSIReadCommand, SCSIWriteCommand
-from . import SCSI_STATUS_CHECK_CONDITION, gevent_friendly
+from . import SCSI_STATUS_CODES, gevent_friendly
 from .errors import AsiSCSIError, AsiRequestQueueFullError
 from ctypes import *
 from logging import getLogger
@@ -73,36 +73,47 @@ SG_FLAG_LUN_INHIBIT = 2
 SG_FLAG_NO_DXFER = 0x10000
 
 # Driver errors (from sg_err.h). The lower nibble is ORed with the upper one.
-SG_ERR_DRIVER_OK = 0x00 # Typically no suggestion
-SG_ERR_DRIVER_BUSY = 0x01
-SG_ERR_DRIVER_SOFT = 0x02
-SG_ERR_DRIVER_MEDIA = 0x03
-SG_ERR_DRIVER_ERROR = 0x04
-SG_ERR_DRIVER_INVALID = 0x05
-SG_ERR_DRIVER_TIMEOUT = 0x06 # Adapter driver is unable to control the SCSI bus to its is setting its devices offline (and giving up)
-SG_ERR_DRIVER_HARD = 0x07
-SG_ERR_DRIVER_SENSE = 0x08 # Implies sense_buffer output above status 'or'ed with one of the following suggestions
-SG_ERR_SUGGEST_RETRY = 0x10
-SG_ERR_SUGGEST_ABORT = 0x20
-SG_ERR_SUGGEST_REMAP = 0x30
-SG_ERR_SUGGEST_DIE = 0x40
-SG_ERR_SUGGEST_SENSE = 0x80
+
+DRIVER_STATUS_CODES = dict(
+    SG_ERR_DRIVER_OK = 0x00, # Typically no suggestion
+    SG_ERR_DRIVER_BUSY = 0x01,
+    SG_ERR_DRIVER_SOFT = 0x02,
+    SG_ERR_DRIVER_MEDIA = 0x03,
+    SG_ERR_DRIVER_ERROR = 0x04,
+    SG_ERR_DRIVER_INVALID = 0x05,
+    SG_ERR_DRIVER_TIMEOUT = 0x06, # Adapter driver is unable to control the SCSI bus to its is setting its devices offline (and giving up)
+    SG_ERR_DRIVER_HARD = 0x07,
+    SG_ERR_DRIVER_SENSE = 0x08, # Implies sense_buffer output above status 'or'ed with one of the following suggestions
+    SG_ERR_SUGGEST_RETRY = 0x10,
+    SG_ERR_SUGGEST_ABORT = 0x20,
+    SG_ERR_SUGGEST_REMAP = 0x30,
+    SG_ERR_SUGGEST_DIE = 0x40,
+    SG_ERR_SUGGEST_SENSE = 0x80
+)
 
 # Host errors (from sg_err.h)
-SG_ERR_DID_OK = 0x00 # NO error
-SG_ERR_DID_NO_CONNECT = 0x01 # Couldn't connect before timeout period
-SG_ERR_DID_BUS_BUSY = 0x02 # BUS stayed busy through time out period
-SG_ERR_DID_TIME_OUT = 0x03 # TIMED OUT for other reason (often this an unexpected device selection timeout)
-SG_ERR_DID_BAD_TARGET = 0x04 # BAD target, device not responding?
-SG_ERR_DID_ABORT = 0x05 # Told to abort for some other reason. From lk 2.4.15 the SCSI subsystem supports 16 byte commands however few adapter drivers do. Those HBA drivers that don't support 16 byte commands will yield this error code if a 16 byte command is passed to a SCSI device they control.
-SG_ERR_DID_PARITY = 0x06 # Parity error. Older SCSI parallel buses have a parity bit for error detection. This probably indicates a cable or termination problem.
-SG_ERR_DID_ERROR = 0x07 # Internal error detected in the host adapter. This may not be fatal (and the command may have succeeded). The aic7xxx and sym53c8xx adapter drivers sometimes report this for data underruns or overruns. [9]
-SG_ERR_DID_RESET = 0x08 # The SCSI bus (or this device) has been reset. Any SCSI device on a SCSI bus is capable of instigating a reset.
-SG_ERR_DID_BAD_INTR = 0x09 # Got an interrupt we weren't expecting
-SG_ERR_DID_PASSTHROUGH = 0x0a # Force command past mid-layer
-SG_ERR_DID_SOFT_ERROR = 0x0b # The low level driver wants a retry
+HOST_STATUS_CODES = dict(
+    SG_ERR_DID_OK = 0x00, # NO error
+    SG_ERR_DID_NO_CONNECT = 0x01, # Couldn't connect before timeout period
+    SG_ERR_DID_BUS_BUSY = 0x02, # BUS stayed busy through time out period
+    SG_ERR_DID_TIME_OUT = 0x03, # TIMED OUT for other reason (often this an unexpected device selection timeout)
+    SG_ERR_DID_BAD_TARGET = 0x04, # BAD target, device not responding?
+    SG_ERR_DID_ABORT = 0x05, # Told to abort for some other reason. From lk 2.4.15 the SCSI subsystem supports 16 byte commands however few adapter drivers do. Those HBA drivers that don't support 16 byte commands will yield this error code if a 16 byte command is passed to a SCSI device they control.
+    SG_ERR_DID_PARITY = 0x06, # Parity error. Older SCSI parallel buses have a parity bit for error detection. This probably indicates a cable or termination problem.
+    SG_ERR_DID_ERROR = 0x07, # Internal error detected in the host adapter. This may not be fatal (and the command may have succeeded). The aic7xxx and sym53c8xx adapter drivers sometimes report this for data underruns or overruns. [9]
+    SG_ERR_DID_RESET = 0x08, # The SCSI bus (or this device) has been reset. Any SCSI device on a SCSI bus is capable of instigating a reset.
+    SG_ERR_DID_BAD_INTR = 0x09, # Got an interrupt we weren't expecting
+    SG_ERR_DID_PASSTHROUGH = 0x0a, # Force command past mid-layer
+    SG_ERR_DID_SOFT_ERROR = 0x0b # The low level driver wants a retry
+)
 
 SENSE_SIZE = 0xFF
+
+
+def prettify_status(code, status_dict):
+    code_string = [key for key, value in status_dict.items() if value == code] or ['']
+    return "%s 0x%02x" % (code_string[0], code)
+
 
 class SGIO(Structure):
     _fields_ = [
@@ -220,8 +231,8 @@ class LinuxCommandExecuter(CommandExecuterBase):
         packet_id = response_sgio.pack_id
         request_sgio = self._get_os_data(packet_id)
 
-        if (response_sgio.status & SCSI_STATUS_CHECK_CONDITION) != 0 or \
-                (response_sgio.driver_status & SG_ERR_DRIVER_SENSE != 0):
+        if (response_sgio.status & SCSI_STATUS_CODES['SCSI_STATUS_CHECK_CONDITION']) != 0 or \
+                (response_sgio.driver_status & DRIVER_STATUS_CODES['SG_ERR_DRIVER_SENSE'] != 0):
             logger.debug("response_sgio.status = 0x{:x}".format(response_sgio.status))
             logger.debug("response_sgio.driver_status = 0x{:x}".format(response_sgio.driver_status))
             return (self._check_condition(string_at(response_sgio.sbp, SENSE_SIZE)), packet_id)
@@ -230,22 +241,28 @@ class LinuxCommandExecuter(CommandExecuterBase):
         if response_sgio.status != 0:
             if response_sgio.host_status == 0x07:
                 return (AsiRequestQueueFullError(), packet_id)
-            return (AsiSCSIError(("SCSI response status is not zero: 0x%02x " +
-                                 "(driver status: 0x%02x, host status: 0x%02x)") %
-                                (response_sgio.status, response_sgio.driver_status, response_sgio.host_status)),
-                   packet_id)
+            error = AsiSCSIError(("SCSI response status is not zero: %s" +
+                                  "(driver status: %s, host status: %s)") %
+                                 (prettify_status(response_sgio.status, SCSI_STATUS_CODES),
+                                  prettify_status(response_sgio.driver_status & 0x0f, DRIVER_STATUS_CODES),
+                                  prettify_status(response_sgio.host_status, HOST_STATUS_CODES)))
+            return (error, packet_id)
             raise StopIteration()
 
         if (response_sgio.driver_status & 0x0F) != 0:
-            return (AsiSCSIError("SCSI driver response status is not zero: 0x%02x (host status: 0x%02x)" %
-                                (response_sgio.driver_status, response_sgio.host_status)), packet_id)
+            error = AsiSCSIError("SCSI driver response status is not zero: %s (host status: %s)" %
+                                (prettify_status(response_sgio.status, SCSI_STATUS_CODES),
+                                 prettify_status(response_sgio.driver_status & 0x0f, DRIVER_STATUS_CODES)))
+            return (error, packet_id)
             raise StopIteration()
 
         if response_sgio.host_status != 0:
-            return (AsiSCSIError(("SCSI host status is not zero: 0x%02x " +
-                                 "(driver status: 0x%02x, host status: 0x%02x)") %
-                                (response_sgio.status, response_sgio.driver_status, response_sgio.host_status)),
-                   packet_id)
+            error = AsiSCSIError(("SCSI host status is not zero: %s 0x%02x " +
+                                  "(driver status: %s 0x%02x, host status: %s 0x%02x)") %
+                                 (prettify_status(response_sgio.status, SCSI_STATUS_CODES),
+                                  prettify_status(response_sgio.driver_status & 0x0f, DRIVER_STATUS_CODES),
+                                  prettify_status(response_sgio.host_status, HOST_STATUS_CODES)))
+            return (error, packet_id)
             raise StopIteration()
 
         data = None
