@@ -113,7 +113,7 @@ class Win32File(OSFile):
     def __init__(self, path, access=IOCTL_ACCESS, share=IOCTL_SHARE,
                  creation_disposition=IOCTL_CREATION, flags=0):
         self.path = unicode(path)
-        self.handle = CreateFile(self.path, access, share, 0, creation_disposition, flags, 0)
+        self.handle = CreateFile(self.path, access, share, None, creation_disposition, flags, None)
         if self.handle == -1:
             raise AsiWin32OSError(GetLastError(), "CreateFile for path %s failed" % path)
 
@@ -126,7 +126,7 @@ class Win32File(OSFile):
 
     def ioctl(self, control_code, input, input_size, output=None, output_size=0):
         bytes_returned = c_ulong(0)
-        if not DeviceIoControl(c_void_p(self.handle), control_code, input, input_size, output or 0, output_size,
+        if not DeviceIoControl(c_void_p(self.handle), control_code, input, input_size, output or None, output_size,
                                byref(bytes_returned), None):
             raise AsiWin32OSError(GetLastError(), "DeviceIoControl %d for path %s failed" % (control_code, self.path))
         return bytes_returned.value
