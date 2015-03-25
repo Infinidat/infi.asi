@@ -257,8 +257,8 @@ class LinuxCommandExecuter(CommandExecuterBase):
             raise StopIteration()
 
         if response_sgio.host_status != 0:
-            error = AsiSCSIError(("SCSI host status is not zero: %s 0x%02x " +
-                                  "(driver status: %s 0x%02x, host status: %s 0x%02x)") %
+            error = AsiSCSIError(("SCSI host status is not zero: %s" +
+                                  "(driver status: %s, host status: %s)") %
                                  (prettify_status(response_sgio.status, SCSI_STATUS_CODES),
                                   prettify_status(response_sgio.driver_status & 0x0f, DRIVER_STATUS_CODES),
                                   prettify_status(response_sgio.host_status, HOST_STATUS_CODES)))
