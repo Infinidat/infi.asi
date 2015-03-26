@@ -344,11 +344,15 @@ class SCSIPassThroughDirect(Structure):
                 spt.DataIn = SCSI_IOCTL_DATA_IN
                 spt.set_data_buffer(create_string_buffer(command.max_response_length))
             else:
-                spt.dxfer_direction = SCSI_IOCTL_DATA_UNSPECIFIED
+                spt.DataIn = SCSI_IOCTL_DATA_UNSPECIFIED
                 spt.set_data_buffer(None)
         else:
-            spt.dxfer_direction = SCSI_IOCTL_DATA_OUT
-            spt.set_data_buffer(create_string_buffer(command.data, len(command.data)))
+            if len(command.data) > 0:
+                spt.DataIn = SCSI_IOCTL_DATA_OUT
+                spt.set_data_buffer(create_string_buffer(command.data, len(command.data)))
+            else:
+                spt.DataIn = SCSI_IOCTL_DATA_UNSPECIFIED
+
         return spt
 
 class Win32CommandExecuter(CommandExecuterBase):
