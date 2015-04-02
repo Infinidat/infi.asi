@@ -1,7 +1,6 @@
 __import__("pkg_resources").declare_namespace(__name__)
 
 import os
-import platform
 from infi.instruct import *
 from infi.pyutils.decorators import wraps
 from .errors import AsiException, AsiCheckConditionError, AsiInternalError
@@ -177,44 +176,48 @@ class CommandExecuterAdapter(CommandExecuter):
     def wait(self):
         return self.call_wrapper(self.executer.wait)
 
+def get_platform_name():
+    from infi.os_info import get_platform_string
+    return get_platform_string().split('-')[0]
+
 def create_platform_command_executer(*args, **kwargs):
-    system = platform.system()
+    platform_name = get_platform_name()
     CommandExecuterForPlatform = None
-    if system == 'Windows':
+    if platform_name == 'windows':
         from .win32 import Win32CommandExecuter as CommandExecuterForPlatform
-    elif system == 'Linux':
+    elif platform_name == 'linux':
         from .linux import LinuxCommandExecuter as CommandExecuterForPlatform
-    elif system == 'SunOS':
+    elif platform_name == 'solaris':
         from .solaris import SolarisCommandExecuter as CommandExecuterForPlatform
     else:
-        raise AsiException("Platform %s is not yet supported." % system)
+        raise AsiException("Platform %s is not yet supported." % platform_name)
     return CommandExecuterForPlatform(*args, **kwargs)
 
 def create_os_file(path, async=False):
     if async:
         return create_async_os_file(path)
-    system = platform.system()
-    if system == 'Windows':
+    platform_name = get_platform_name()
+    if platform_name == 'windows':
         from .win32 import Win32File
         return Win32File(path)
-    elif system in ['Linux', 'SunOS']:
+    elif platform_name in ['linux', 'solaris']:
         from .unix import UnixFile
         return UnixFile(os.open(path, os.O_RDWR))
-    raise AsiException("Platform %s is not yet supported." % system)
+    raise AsiException("Platform %s is not yet supported." % platform_name)
 
 def create_async_os_file(path):
-    system = platform.system()
-    if system == 'Windows':
+    platform_name = get_platform_name()
+    if platform_name == 'windows':
         from .win32 import Win32AsyncFile
         return Win32AsyncFile(path)
-    raise AsiException("Platform %s is not yet supported." % system)
+    raise AsiException("Platform %s is not yet supported." % platform_name)
 
 def create_os_async_reactor():
-    system = platform.system()
-    if system == 'Windows':
+    platform_name = get_platform_name()
+    if platform_name == 'windows':
         from .win32 import Win32AsyncReactor
         return Win32AsyncReactor()
-    raise AsiException("Platform %s is not yet supported." % system)
+    raise AsiException("Platform %s is not yet supported." % platform_name)
 
 
 def gevent_friendly(func):
