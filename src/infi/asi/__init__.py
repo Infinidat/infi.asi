@@ -189,6 +189,8 @@ def create_platform_command_executer(*args, **kwargs):
         from .linux import LinuxCommandExecuter as CommandExecuterForPlatform
     elif platform_name == 'solaris':
         from .solaris import SolarisCommandExecuter as CommandExecuterForPlatform
+    elif platform_name == 'aix':
+        from .aix import AixCommandExecuter as CommandExecuterForPlatform
     else:
         raise AsiException("Platform %s is not yet supported." % platform_name)
     return CommandExecuterForPlatform(*args, **kwargs)
@@ -200,7 +202,7 @@ def create_os_file(path, async=False):
     if platform_name == 'windows':
         from .win32 import Win32File
         return Win32File(path)
-    elif platform_name in ['linux', 'solaris']:
+    elif platform_name in ['linux', 'solaris', 'aix']:
         from .unix import UnixFile
         return UnixFile(os.open(path, os.O_RDWR))
     raise AsiException("Platform %s is not yet supported." % platform_name)
