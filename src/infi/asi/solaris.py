@@ -72,22 +72,22 @@ struct uscsi_cmd {
 #define USCSI_REASON_PROTOCOL           5       /* protocol issue */
 #define USCSI_REASON_RESERVED           0xFF    /* reserved */
 """
-USCSI_SILENT = 0x00000001 # no error messages
-USCSI_DIAGNOSE = 0x00000002 # fail if any error occurs
+USCSI_SILENT = 0x00000001  # no error messages
+USCSI_DIAGNOSE = 0x00000002  # fail if any error occurs
 # NOTE: set USCSI_DIAGNOSE and you are responsible for all retry/recovery
-USCSI_ISOLATE  = 0x00000004 # isolate from normal commands
-USCSI_READ = 0x00000008 # get data from device
-USCSI_WRITE = 0x00000000 # send data to device
+USCSI_ISOLATE  = 0x00000004  # isolate from normal commands
+USCSI_READ = 0x00000008  # get data from device
+USCSI_WRITE = 0x00000000  # send data to device
 
-USCSI_RESET = 0x00004000 # Reset target
-USCSI_RESET_TARGET = USCSI_RESET # Reset target
-USCSI_RESET_ALL = 0x00008000 # Reset all targets
-USCSI_RQENABLE = 0x00010000 # Enable Request Sense extensions
-USCSI_RENEGOT = 0x00020000 # renegotiate wide/sync on next I/O
-USCSI_RESET_LUN = 0x00040000 # Reset logical unit
-USCSI_PATH_INSTANCE = 0x00080000 # use path instance for transport
+USCSI_RESET = 0x00004000  # Reset target
+USCSI_RESET_TARGET = USCSI_RESET  # Reset target
+USCSI_RESET_ALL = 0x00008000  # Reset all targets
+USCSI_RQENABLE = 0x00010000  # Enable Request Sense extensions
+USCSI_RENEGOT = 0x00020000  # renegotiate wide/sync on next I/O
+USCSI_RESET_LUN = 0x00040000  # Reset logical unit
+USCSI_PATH_INSTANCE = 0x00080000  # use path instance for transport
 
-USCSI_REASON = 0x00200000 # return uscsi_reason
+USCSI_REASON = 0x00200000  # return uscsi_reason
 
 # suitable for parallel SCSI bus only
 USCSI_ASYNC = 0x00001000      # Set bus to asynchronous mode
@@ -103,7 +103,7 @@ USCSI_DEFAULT_FLAGS = USCSI_REASON
 class SCSICMD(Structure):
     _fields_ = [
     ("uscsi_flags", c_int),
-    ("uscsi_status", c_short), # Will be parsed as 2 byte variables - uscsi_status, uscsi_reason
+    ("uscsi_status", c_short),  # Will be parsed as 2 byte variables - uscsi_status, uscsi_reason
     ("uscsi_timeout", c_short),
     ("uscsi_cdb", c_void_p),
     ("uscsi_bufaddr", c_void_p),
@@ -227,4 +227,3 @@ class SolarisCommandExecuter(CommandExecuterBase):
     def _os_receive(self):
         raw = yield self.buffer
         yield self._handle_raw_response(raw)
-

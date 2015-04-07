@@ -20,7 +20,7 @@ typedef struct sg_io_hdr
   unsigned short int iovec_count; /* [i] 0 implies no scatter gather */
   unsigned int dxfer_len;     /* [i] byte count of data transfer */
   void * dxferp;              /* [i], [*io] points to data transfer memory
-				 or scatter gather list */
+                 or scatter gather list */
   unsigned char * cmdp;       /* [i], [*i] points to command to perform */
   unsigned char * sbp;        /* [i], [*o] points to sense_buffer memory */
   unsigned int timeout;       /* [i] MAX_UINT->no timeout (unit: millisec) */
@@ -42,27 +42,27 @@ typedef struct sg_io_hdr
 #define SG_DXFER_TO_DEV -2      /* e.g. a SCSI WRITE command */
 #define SG_DXFER_FROM_DEV -3    /* e.g. a SCSI READ command */
 #define SG_DXFER_TO_FROM_DEV -4 /* treated like SG_DXFER_FROM_DEV with the
-				   additional property than during indirect
-				   IO the user buffer is copied into the
-				   kernel buffers before the transfer */
+                   additional property than during indirect
+                   IO the user buffer is copied into the
+                   kernel buffers before the transfer */
 
 
 /* following flag values can be "or"-ed together */
 #define SG_FLAG_DIRECT_IO 1     /* default is indirect IO */
 #define SG_FLAG_LUN_INHIBIT 2   /* default is to put device's lun into */
-				/* the 2nd byte of SCSI command */
+                /* the 2nd byte of SCSI command */
 #define SG_FLAG_NO_DXFER 0x10000 /* no transfer of kernel buffers to/from */
-				/* user space (debug indirect IO) */
+                /* user space (debug indirect IO) */
 
 /* The following 'info' values are "or"-ed together.  */
-#define SG_INFO_OK_MASK	0x1
-#define SG_INFO_OK	0x0	/* no sense, host nor driver "noise" */
-#define SG_INFO_CHECK	0x1     /* something abnormal happened */
+#define SG_INFO_OK_MASK    0x1
+#define SG_INFO_OK    0x0    /* no sense, host nor driver "noise" */
+#define SG_INFO_CHECK    0x1     /* something abnormal happened */
 
-#define SG_INFO_DIRECT_IO_MASK	0x6
-#define SG_INFO_INDIRECT_IO 	0x0	/* data xfer via kernel buffers (or no xfer) */
-#define SG_INFO_DIRECT_IO 	0x2	/* direct IO requested and performed */
-#define SG_INFO_MIXED_IO 	0x4	/* part direct, part indirect IO */
+#define SG_INFO_DIRECT_IO_MASK    0x6
+#define SG_INFO_INDIRECT_IO     0x0    /* data xfer via kernel buffers (or no xfer) */
+#define SG_INFO_DIRECT_IO     0x2    /* direct IO requested and performed */
+#define SG_INFO_MIXED_IO     0x4    /* part direct, part indirect IO */
 """
 SG_DXFER_NONE = -1
 SG_DXFER_TO_DEV = -2
@@ -75,15 +75,15 @@ SG_FLAG_NO_DXFER = 0x10000
 # Driver errors (from sg_err.h). The lower nibble is ORed with the upper one.
 
 DRIVER_STATUS_CODES = dict(
-    SG_ERR_DRIVER_OK = 0x00, # Typically no suggestion
+    SG_ERR_DRIVER_OK = 0x00,  # Typically no suggestion
     SG_ERR_DRIVER_BUSY = 0x01,
     SG_ERR_DRIVER_SOFT = 0x02,
     SG_ERR_DRIVER_MEDIA = 0x03,
     SG_ERR_DRIVER_ERROR = 0x04,
     SG_ERR_DRIVER_INVALID = 0x05,
-    SG_ERR_DRIVER_TIMEOUT = 0x06, # Adapter driver is unable to control the SCSI bus to its is setting its devices offline (and giving up)
+    SG_ERR_DRIVER_TIMEOUT = 0x06,  # Adapter driver is unable to control the SCSI bus to its is setting its devices offline (and giving up)
     SG_ERR_DRIVER_HARD = 0x07,
-    SG_ERR_DRIVER_SENSE = 0x08, # Implies sense_buffer output above status 'or'ed with one of the following suggestions
+    SG_ERR_DRIVER_SENSE = 0x08,  # Implies sense_buffer output above status 'or'ed with one of the following suggestions
     SG_ERR_SUGGEST_RETRY = 0x10,
     SG_ERR_SUGGEST_ABORT = 0x20,
     SG_ERR_SUGGEST_REMAP = 0x30,
@@ -93,18 +93,18 @@ DRIVER_STATUS_CODES = dict(
 
 # Host errors (from sg_err.h)
 HOST_STATUS_CODES = dict(
-    SG_ERR_DID_OK = 0x00, # NO error
-    SG_ERR_DID_NO_CONNECT = 0x01, # Couldn't connect before timeout period
-    SG_ERR_DID_BUS_BUSY = 0x02, # BUS stayed busy through time out period
-    SG_ERR_DID_TIME_OUT = 0x03, # TIMED OUT for other reason (often this an unexpected device selection timeout)
-    SG_ERR_DID_BAD_TARGET = 0x04, # BAD target, device not responding?
-    SG_ERR_DID_ABORT = 0x05, # Told to abort for some other reason. From lk 2.4.15 the SCSI subsystem supports 16 byte commands however few adapter drivers do. Those HBA drivers that don't support 16 byte commands will yield this error code if a 16 byte command is passed to a SCSI device they control.
-    SG_ERR_DID_PARITY = 0x06, # Parity error. Older SCSI parallel buses have a parity bit for error detection. This probably indicates a cable or termination problem.
-    SG_ERR_DID_ERROR = 0x07, # Internal error detected in the host adapter. This may not be fatal (and the command may have succeeded). The aic7xxx and sym53c8xx adapter drivers sometimes report this for data underruns or overruns. [9]
-    SG_ERR_DID_RESET = 0x08, # The SCSI bus (or this device) has been reset. Any SCSI device on a SCSI bus is capable of instigating a reset.
-    SG_ERR_DID_BAD_INTR = 0x09, # Got an interrupt we weren't expecting
-    SG_ERR_DID_PASSTHROUGH = 0x0a, # Force command past mid-layer
-    SG_ERR_DID_SOFT_ERROR = 0x0b # The low level driver wants a retry
+    SG_ERR_DID_OK = 0x00,  # NO error
+    SG_ERR_DID_NO_CONNECT = 0x01,  # Couldn't connect before timeout period
+    SG_ERR_DID_BUS_BUSY = 0x02,  # BUS stayed busy through time out period
+    SG_ERR_DID_TIME_OUT = 0x03,  # TIMED OUT for other reason (often this an unexpected device selection timeout)
+    SG_ERR_DID_BAD_TARGET = 0x04,  # BAD target, device not responding?
+    SG_ERR_DID_ABORT = 0x05,  # Told to abort for some other reason. From lk 2.4.15 the SCSI subsystem supports 16 byte commands however few adapter drivers do. Those HBA drivers that don't support 16 byte commands will yield this error code if a 16 byte command is passed to a SCSI device they control.
+    SG_ERR_DID_PARITY = 0x06,  # Parity error. Older SCSI parallel buses have a parity bit for error detection. This probably indicates a cable or termination problem.
+    SG_ERR_DID_ERROR = 0x07,  # Internal error detected in the host adapter. This may not be fatal (and the command may have succeeded). The aic7xxx and sym53c8xx adapter drivers sometimes report this for data underruns or overruns. [9]
+    SG_ERR_DID_RESET = 0x08,  # The SCSI bus (or this device) has been reset. Any SCSI device on a SCSI bus is capable of instigating a reset.
+    SG_ERR_DID_BAD_INTR = 0x09,  # Got an interrupt we weren't expecting
+    SG_ERR_DID_PASSTHROUGH = 0x0a,  # Force command past mid-layer
+    SG_ERR_DID_SOFT_ERROR = 0x0b  # The low level driver wants a retry
 )
 
 SENSE_SIZE = 0xFF

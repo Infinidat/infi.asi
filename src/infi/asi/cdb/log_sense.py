@@ -15,7 +15,6 @@ class LogSenseCommand(CDBBuffer):
     allocation_length = be_uint_field(where=bytes_ref[7:9])
     control = buffer_field(type=ControlBuffer, where=bytes_ref[9], set_before_pack=DEFAULT_CONTROL_BUFFER)
 
-
     def __init__(self, page_code, subpage_code=0, allocation_length=396):
         super(LogSenseCommand, self).__init__()
         self.sp = 0

@@ -17,4 +17,3 @@ class UnitSerialNumberVPDPageCommand(EVPDInquiryCommand):
         super(UnitSerialNumberVPDPageCommand, self).__init__(0x80, 252, UnitSerialNumberVPDPageBuffer)
 
 __all__ = ["UnitSerialNumberVPDPageCommand", "UnitSerialNumberVPDPageBuffer"]
-

@@ -33,8 +33,8 @@ class OSAsyncFile(object):
     pass
 
 class OSAsyncIOToken(object):
-	def get_result(self, block=False):
-		raise NotImplementedError()
+    def get_result(self, block=False):
+        raise NotImplementedError()
 
 class OSAsyncReactor(object):
     def wait_for(*commands):
@@ -70,9 +70,9 @@ class CommandExecuter(object):
 
 class CommandExecuterBase(CommandExecuter):
     def __init__(self, max_queue_size=DEFAULT_MAX_QUEUE_SIZE):
-       self.pending_packets = dict()
-       self.max_queue_size = max_queue_size
-       self.packet_index = 0
+        self.pending_packets = dict()
+        self.max_queue_size = max_queue_size
+        self.packet_index = 0
 
     def call(self, command):
         result = []

@@ -150,4 +150,3 @@ class Write16Command(CDB):
         datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIWriteCommand(datagram, self.buffer))
         yield result_datagram
-

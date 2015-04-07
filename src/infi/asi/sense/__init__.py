@@ -99,4 +99,3 @@ def get_sense_object_from_buffer(buf):
     else:
         return None
     return sense
-

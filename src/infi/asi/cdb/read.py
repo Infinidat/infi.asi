@@ -35,7 +35,6 @@ class Read6Command(CDB):
         self.logical_block_address__msb = self.logical_block_address >> 16
         self.logical_block_address__lsb = self.logical_block_address & 0xffff
 
-
     def execute(self, executer):
         datagram = self.create_datagram()
         read_length = self.block_size * self.transfer_length
@@ -86,7 +85,7 @@ class Read12Command(CDB):
                           BitPadding(2),
                           BitFlag("fua", 0),
                           BitFlag("dpo", 0),
-                          BitField("reserved", 3, 0),                         
+                          BitField("reserved", 3, 0),
                           ),
                 UBInt32("logical_block_address"),
                 UBInt32("transfer_length"),
@@ -118,7 +117,7 @@ class Read16Command(CDB):
                           BitPadding(1),
                           BitFlag("fua", 0),
                           BitFlag("dpo", 0),
-                          BitField("reserved", 3, 0),                         
+                          BitField("reserved", 3, 0),
                           ),
                 UBInt64("logical_block_address"),
                 UBInt32("transfer_length"),

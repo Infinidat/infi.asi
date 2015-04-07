@@ -28,8 +28,8 @@ class OSFile(object):
         os.close(self.fd)
 
 f = OSFile(os.open(path, os.O_RDWR))
-        
-        
+
+
 try:
 
     executer = create_platform_command_executer(f)
@@ -45,4 +45,3 @@ try:
     f.close()
 except:
     print_exc()
-

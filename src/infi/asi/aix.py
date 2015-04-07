@@ -197,41 +197,41 @@ SC_MIX_IO =      0x1          # Do not quiesce device before
 SCSI_STATUS_MASK = 0x1e  # mask for useful bits
 
 ADAPTER_STATUS_CODES = dict(
-     SCSI_HOST_IO_BUS_ERR = 0x01,  # indicates a Host I/O Bus error
-     SCSI_TRANSPORT_FAULT = 0x02,  # indicates a failure of the
-     SCSI_CMD_TIMEOUT = 0x03,  # the command did not complete
-     SCSI_NO_DEVICE_RESPONSE = 0x04,  # the target device did not
-     SCSI_ADAPTER_HDW_FAILURE = 0x05,  # the adapter is indicating a
-     SCSI_ADAPTER_SFW_FAILURE = 0x06,  # the adapter is indicating a
-     SCSI_WW_NAME_CHANGE = 0x07,  # the adapter detected that the
-     SCSI_FUSE_OR_TERMINAL_PWR = 0x08,  #the adapter is indicating a
-     SCSI_TRANSPORT_RESET = 0x09,  #the adapter detected an external
-     SCSI_TRANSPORT_BUSY = 0x0a,  #the transport layer is busy
-     SCSI_TRANSPORT_DEAD = 0x0b,  #the transport layer is
-     SCSI_VERIFY_DEVICE = 0x0c,  #the adapter is indicating that
-     SCSI_TRANSPORT_MIGRATED = 0x0d,  #transport migrated
-     SCSI_ERROR_NO_RETRY = 0x0e,  #An error occured, do not retry
-     SCSI_ERROR_DELAY_LOG = 0x0f  #An error occured, only log an
+     SCSI_HOST_IO_BUS_ERR =      0x01,  # indicates a Host I/O Bus error
+     SCSI_TRANSPORT_FAULT =      0x02,  # indicates a failure of the
+     SCSI_CMD_TIMEOUT =          0x03,  # the command did not complete
+     SCSI_NO_DEVICE_RESPONSE =   0x04,  # the target device did not
+     SCSI_ADAPTER_HDW_FAILURE =  0x05,  # the adapter is indicating a
+     SCSI_ADAPTER_SFW_FAILURE =  0x06,  # the adapter is indicating a
+     SCSI_WW_NAME_CHANGE =       0x07,  # the adapter detected that the
+     SCSI_FUSE_OR_TERMINAL_PWR = 0x08,  # the adapter is indicating a
+     SCSI_TRANSPORT_RESET =      0x09,  # the adapter detected an external
+     SCSI_TRANSPORT_BUSY =       0x0a,  # the transport layer is busy
+     SCSI_TRANSPORT_DEAD =       0x0b,  # the transport layer is
+     SCSI_VERIFY_DEVICE =        0x0c,  # the adapter is indicating that
+     SCSI_TRANSPORT_MIGRATED =   0x0d,  # transport migrated
+     SCSI_ERROR_NO_RETRY =       0x0e,  # An error occured, do not retry
+     SCSI_ERROR_DELAY_LOG =      0x0f,  # An error occured, only log an
 )
 
 
 EINVAL_CODES = dict(
-    SC_PASSTHRU_INV_VERS =        1,  # Version field is invalid
-    SC_PASSTHRU_INV_Q_TAG_MSG =   9,  # q_tag_msg field is invalid
-    SC_PASSTHRU_INV_FLAGS =      10,  # flags field is invalid
-    SC_PASSTHRU_INV_DEVFLAGS =   11,  # devflags field is invalid
-    SC_PASSTHRU_INV_Q_FLAGS =    12,  # q_flags field is invalid
-    SC_PASSTHRU_INV_CDB_LEN =    13,  # command_length field is invalid
-    SC_PASSTHRU_INV_AS_LEN =     15,  # autosense_length field is invalid
-    SC_PASSTHRU_INV_CDB =        16,  # scsi_cdb field is invalid
-    SC_PASSTHRU_INV_TO =         17,  # timeout_value field is invalid
-    SC_PASSTHRU_INV_D_LEN =      18,  # data_length field is invalid
-    SC_PASSTHRU_INV_SID =        19,  # scsi_id field is invalid
-    SC_PASSTHRU_INV_LUN =        20,  # lun_id field is invalid
-    SC_PASSTHRU_INV_BUFF =       21,  # buffer field is invalid
-    SC_PASSTHRU_INV_AS_BUFF =    22,  # autosense_buffer_ptr is invalid
-    SC_PASSTHRU_INV_VAR_CDB_LEN =  23,  # varialbe_cdb_length field is
-    SC_PASSTHRU_INV_VAR_CDB =    24,  # variable_cdb_ptr field is invalid
+    SC_PASSTHRU_INV_VERS =         1,  # Version field is invalid
+    SC_PASSTHRU_INV_Q_TAG_MSG =    9,  # q_tag_msg field is invalid
+    SC_PASSTHRU_INV_FLAGS =       10,  # flags field is invalid
+    SC_PASSTHRU_INV_DEVFLAGS =    11,  # devflags field is invalid
+    SC_PASSTHRU_INV_Q_FLAGS =     12,  # q_flags field is invalid
+    SC_PASSTHRU_INV_CDB_LEN =     13,  # command_length field is invalid
+    SC_PASSTHRU_INV_AS_LEN =      15,  # autosense_length field is invalid
+    SC_PASSTHRU_INV_CDB =         16,  # scsi_cdb field is invalid
+    SC_PASSTHRU_INV_TO =          17,  # timeout_value field is invalid
+    SC_PASSTHRU_INV_D_LEN =       18,  # data_length field is invalid
+    SC_PASSTHRU_INV_SID =         19,  # scsi_id field is invalid
+    SC_PASSTHRU_INV_LUN =         20,  # lun_id field is invalid
+    SC_PASSTHRU_INV_BUFF =        21,  # buffer field is invalid
+    SC_PASSTHRU_INV_AS_BUFF =     22,  # autosense_buffer_ptr is invalid
+    SC_PASSTHRU_INV_VAR_CDB_LEN = 23,  # varialbe_cdb_length field is
+    SC_PASSTHRU_INV_VAR_CDB =     24,  # variable_cdb_ptr field is invalid
 )
 
 
