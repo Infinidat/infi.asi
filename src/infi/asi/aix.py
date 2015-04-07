@@ -1,4 +1,4 @@
-from . import CommandExecuterBase, DEFAULT_TIMEOUT, SCSIReadCommand, SCSIWriteCommand
+from . import CommandExecuterBase, DEFAULT_TIMEOUT_IN_SEC, SCSIReadCommand, SCSIWriteCommand
 from . import SCSI_STATUS_CODES, gevent_friendly
 from . import OSFile
 from .linux import prettify_status, SENSE_SIZE
@@ -340,7 +340,7 @@ class sc_passthru(Structure):
         return sizeof(cls)
 
 class AixCommandExecuter(CommandExecuterBase):
-    def __init__(self, io, max_queue_size=1, timeout=DEFAULT_TIMEOUT):
+    def __init__(self, io, max_queue_size=1, timeout=DEFAULT_TIMEOUT_IN_SEC):
         super(AixCommandExecuter, self).__init__(max_queue_size)
         self.io = io
         self.timeout = timeout
