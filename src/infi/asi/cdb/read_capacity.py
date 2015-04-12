@@ -79,7 +79,7 @@ class ReportReadCapacityData16(Struct):
             ),
         BitFields(
             BitField("logical_blocks_per_physical_block", 4, 0),
-            BitField("p_i_exponenet", 4, 0),
+            BitField("p_i_exponent", 4, 0),
             ),
         BitFields(
             BitField("lowest_aligned_lba_msb", 6, 0),

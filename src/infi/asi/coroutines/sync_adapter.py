@@ -11,10 +11,10 @@ class Coroutine(object):
         self.tb = None
         self.result = None
         self.done = False
-        
+
     def _handle_async_io_token(self):
         raise NotImplementedError()
-        
+
     def _next_step(self):
         """ invokes next generator in stack. returns False if execution should stop """
         try:
@@ -38,7 +38,7 @@ class Coroutine(object):
                 raise
             self.args = e
         return True
-                
+
     def loop(self):
         while len(self.stack) > 0:
             if not self._next_step():
@@ -48,25 +48,25 @@ class Coroutine(object):
 
     def is_done(self):
         return self.done
-    
+
     def get_result(self):
         return self.result
-        
+
 class AsyncCoroutine(Coroutine):
     def _handle_async_io_token(self):
         return False    # async IO - we should stop our loop and return control to the reactor
-        
+
     def async_io_complete(self):
         """ Callback for reactor to signal that a blocking async IO has been completed """
         # current self.result is an Async IO Token, we can ask for its result now and continue with the stack
         self.args = self.result.get_result()
-        
+
 class SyncCoroutine(Coroutine):
     def _handle_async_io_token(self):
         # we just ask for a synhronous result from self.result which is the Async IO Token, and then continue
         self.args = self.result.get_result(block=True)
         return True
-        
+
 def sync_call(func, *init_args, **init_kwargs):
     stack = [ func(*init_args, **init_kwargs) ]
     return sync_wait(func(*init_args, **init_kwargs))

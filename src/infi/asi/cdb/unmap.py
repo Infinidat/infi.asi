@@ -28,12 +28,12 @@ class UnmapCommand(CDB):
             unmap_obj=UnmapParameterListBlock(range[0], range[1])
             self.unmap_ubjects.append(unmap_obj)
             blocks.append(unmap_obj.datagram)
-        block_stream = ''.join(blocks)     
-       
+        block_stream = ''.join(blocks)
+
         self.header_obj=UnmapParameterListHeader(len(block_stream))
         self.buffer=self.header_obj.datagram +block_stream
         self.parameter_list_length=len(self.buffer)
-        
+
     def execute(self, executer):
         datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIWriteCommand(datagram, self.buffer))
@@ -45,14 +45,14 @@ class UnmapParameterListHeader(CDB):
                 UBInt16("unmap_data_length"),
                 UBInt16("unmap_block_descriptor_data_length"),
                 Padding(4)
-                ]  
+                ]
 
     def __init__(self, data_length):
         super(UnmapParameterListHeader, self).__init__()
         self.unmap_data_length=data_length+7
         self.unmap_block_descriptor_data_length=data_length
         self.datagram = self.create_datagram()
-        
+
 
 class UnmapParameterListBlock(CDB):
     _fields_ = [
@@ -60,7 +60,7 @@ class UnmapParameterListBlock(CDB):
                 UBInt32("number_of_logical_blocks"),
                 Padding(4)
                 ]
-    
+
     def __init__(self, lba, number_of_blocks):
         super(UnmapParameterListBlock, self).__init__()
         self.unmap_lba=lba

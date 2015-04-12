@@ -11,7 +11,7 @@ CDB_OPCODE_COMPARE_AND_WRITE = 0x89
 # TODO move this
 DEFAULT_BLOCK_SIZE = 512
 
-        
+
 class CompareAndWriteCommand(CDB):
     _fields_ = [
                 ConstField("opcode", OperationCode(opcode=CDB_OPCODE_COMPARE_AND_WRITE)),
@@ -48,4 +48,3 @@ class CompareAndWriteCommand(CDB):
         result_datagram = yield executer.call(SCSIWriteCommand(datagram, self.buffer))
 
         yield result_datagram
-        

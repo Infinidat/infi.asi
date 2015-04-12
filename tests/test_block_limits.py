@@ -15,4 +15,3 @@ class BlockLimitsTestCase(unittest.TestCase):
         from infi.asi.cdb.inquiry.vpd_pages import block_limits
         self.assertIs(SUPPORTED_VPD_PAGES_COMMANDS[0xb0],
                       block_limits.BlockLimitsPageCommand)
-

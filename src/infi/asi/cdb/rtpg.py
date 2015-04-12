@@ -24,7 +24,7 @@ class RTPGCommand(CDB):
             BitField("service_action", 5, 10),
             BitField("parameter_data_format", 3, 0),
             ),
-        Padding(4),                 
+        Padding(4),
         UBInt32("allocation_length"),
         Padding(1),
         Field("control", Control, DEFAULT_CONTROL)
@@ -39,15 +39,13 @@ class RTPGCommand(CDB):
         elif self.parameter_data_format == 1:
             response=TargetPortGroupExtendedResponse()
             response.unpack(result_datagram)
-                    
+
         yield response
 
     def __init__(self, parameter_data_format=0, allocation_length=16384):
         super(RTPGCommand, self).__init__(parameter_data_format=parameter_data_format,
                                                 allocation_length=allocation_length)
         assert parameter_data_format in (0,1),"wrong parameter_data_format value {}".format(parameter_data_format)
-
-
 
 class TargetPortDescriptor(Buffer):
     byte_size = 4
@@ -79,5 +77,3 @@ class TargetPortGroupExtendedResponse(Buffer):
     format_type = be_int_field(where=bytes_ref[4].bits[4:7])
     descriptor_list = list_field(type=TargetPortGroupDescriptor, where=bytes_ref[7:7 + data_length])
     # ...
-
-

@@ -25,4 +25,3 @@ class VeritasVPDPageCommand(EVPDInquiryCommand):
         super(VeritasVPDPageCommand, self).__init__(0xc0, 252, VeritasVPDPageBuffer)
 
 __all__ = ["UnitSerialNumberVPDPageCommand", "UnitSerialNumberVPDPageData"]
-
