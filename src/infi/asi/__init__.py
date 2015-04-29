@@ -203,9 +203,12 @@ def create_os_file(path, async=False):
     if platform_name == 'windows':
         from .win32 import Win32File
         return Win32File(path)
-    elif platform_name in ['linux', 'solaris', 'aix']:
+    elif platform_name in ['linux', 'aix']:
         from .unix import UnixFile
         return UnixFile(os.open(path, os.O_RDWR))
+    elif platform_name == 'solaris':
+        from .unix import UnixFile
+        return UnixFile(os.open(path, os.O_RDWR|os.O_NONBLOCK))
     raise AsiException("Platform %s is not yet supported." % platform_name)
 
 def create_async_os_file(path):
