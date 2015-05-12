@@ -286,8 +286,11 @@ class sc_passthru(Structure):
 
     def init_command_buffer(self, command):
         self.command_buffer = create_string_buffer(command, len(command))
-        self.variable_cdb_ptr = cast(self.command_buffer, c_void_p)
-        self.variable_cdb_length = len(self.command_buffer)
+        for i in range(SC_PASSTHRU_CDB_LEN):
+            self.scsi_cdb[i] = 0
+        for i in range(min(SC_PASSTHRU_CDB_LEN, len(command))):
+            self.scsi_cdb[i] = ord(command[i])
+        self.command_length = len(command)
 
     def set_data_buffer(self, buf):
         if buf is not None:
