@@ -39,6 +39,8 @@ Now we will use these context managers to send the CDB:
 
 ```python
 >>> # Linux
+>>> from infi.asi.cdb.inquiry.standard import StandardInquiryCommand
+>>> from infi.asi.coroutines.sync_adapter import sync_wait
 >>> with asi_context_linux("/dev/sg0") as asi:
 ...     command = StandardInquiryCommand()
 ...     response = sync_wait(command.execute(asi))
