@@ -1,7 +1,6 @@
 import sys
 import time
 from infi.asi import create_platform_command_executer
-from infi.asi.unix import OSFile
 from infi.asi.cdb.inquiry.standard import StandardInquiryCommand
 from infi.asi.coroutines.sync_adapter import sync_wait
 from infi.asi import create_os_file

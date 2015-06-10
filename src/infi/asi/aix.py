@@ -1,6 +1,5 @@
 from . import CommandExecuterBase, DEFAULT_TIMEOUT_IN_SEC, SCSIReadCommand, SCSIWriteCommand
 from . import SCSI_STATUS_CODES, gevent_friendly
-from . import OSFile
 from .linux import prettify_status, SENSE_SIZE
 from .errors import AsiSCSIError, AsiOSError
 from ctypes import *

@@ -7,32 +7,11 @@ Usage
 -----
 
 In this example, we will send a standard inquiry commands in a sync fashion.
-First, we will create context managers that will handle the device open/close:
+We will use the context managers from infi.asi.executers to handle the device open/close:
 
 ```python
-from contextlib import contextmanager
-from os import O_RDWR, open
-from infi.asi import create_platform_command_executer
-
-@contextmanager
-def asi_context_linux(device_path):
-    from infi.asi.unix import OSFile
-    handle = OSFile(open(device_path, O_RDWR))
-    executer = create_platform_command_executer(handle)
-    try:
-        yield executer
-    finally:
-        handle.close()
-
-@contextmanager
-def asi_context_windows(device_path):
-    from infi.asi.win32 import OSFile
-    handle = OSFile(open(device_path))
-    executer = create_platform_command_executer(handle)
-    try:
-        yield executer
-    finally:
-        handle.close()
+from infi.asi.executers import linux_sg as asi_context_linux
+from infi.asi.executers import windows as asi_context_windows
 ```
 
 Now we will use these context managers to send the CDB:
