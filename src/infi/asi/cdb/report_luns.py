@@ -2,12 +2,24 @@ from . import CDB
 from .. import SCSIReadCommand
 from .operation_code import OperationCode
 from .control import Control, DEFAULT_CONTROL
+from infi.asi.errors import AsiInternalError
 from infi.instruct import *
 
 # spc4r30: 6.37 (page 394)
 
 CDB_OPCODE = 0xA0
 ALLOCATION_SIZE_FOR_256_LUNS = 16384
+
+
+class UnsupportedReportLuns(AsiInternalError):
+    pass
+
+class UnsupportedLunAdressing(UnsupportedReportLuns):
+    pass
+
+class UnsupportedLogicalUnitAddressingMethod(UnsupportedReportLuns):
+    pass
+
 
 class ReportLunsCommand(CDB):
     _fields_ = [
@@ -26,7 +38,7 @@ class ReportLunsCommand(CDB):
 
         if self.allocation_length >= 16:
             result = ReportLunsData.create_from_string(result_datagram)
-            result.lun_list = [item >> 48 for item in result.lun_list]
+            result.normalize_lun_list()
         else:
             len_result_datagram = 0 if not result_datagram else len(result_datagram)
             assert len_result_datagram == self.allocation_length, "did not get the requested buffer"
@@ -43,3 +55,11 @@ class ReportLunsData(Struct):
         Padding(4),
         SumSizeArray("lun_list", ReadPointer("lun_list_length"), UBInt64),
     ]
+
+    def normalize_lun_list(self):
+        for item in self.lun_list:
+            if item & 0xFFFFFFFFFFFF: # there is second/third/fourth level addressing
+                raise UnsupportedLunAdressing(item)
+            if item & 0xC000000000000000: # address method is not 00 (Simple logical unit addressing method)
+                raise UnsupportedLogicalUnitAddressingMethod(item)
+        self.lun_list = [item >> 48 for item in self.lun_list]
