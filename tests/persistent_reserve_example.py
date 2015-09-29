@@ -6,9 +6,8 @@ from infi.asi.cdb.persist.input import PersistentReserveInCommand, PERSISTENT_RE
 def read_keys_example(device):
     with asi_context_linux(device) as asi:
         command = PersistentReserveInCommand(service_action=PERSISTENT_RESERVE_IN_SERVICE_ACTION_CODES.READ_KEYS)
-        print `command.pack()`
         response = sync_wait(command.execute(asi))
-        print `response`
+        return response
 
 def register_key_example(device):
     with asi_context_linux(device) as asi:
@@ -16,4 +15,4 @@ def register_key_example(device):
             service_action=PERSISTENT_RESERVE_OUT_SERVICE_ACTION_CODES.REGISTER,
             service_action_reservation_key=0xABBA)
         response = sync_wait(command.execute(asi))
-        print `response`
+        return response

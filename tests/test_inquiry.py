@@ -13,6 +13,7 @@ from infi.asi.cdb.inquiry.vpd_pages import SupportedVPDPagesCommand
 def hex_to_bin(s):
     return binascii.unhexlify(s.replace(' ', ''))
 
+
 class LinuxInquiryTestCase(TestCase):
     def setUp(self):
         from platform import system

@@ -35,11 +35,11 @@ class TestPersistentReserveIn(TestCase):
         PersistentReserveInReadKeysResponse.unpack(obj, cmd)
         self.assertEquals(obj.pr_generation, 0x00000035)
         self.assertEquals(obj.key_list, [0xABBA])
-        self.assertEquals(0, obj.missing_allocation_length(len(cmd)))
+        self.assertEquals(16, obj.required_allocation_length())
         poor_allocating_command = PersistentReserveInReadKeysResponse() 
         PersistentReserveInReadKeysResponse.unpack(poor_allocating_command,
             b"\x00\x00\x00\x35\x00\x00\x00\x08\x00\x00\x00\x00\x00\x00\xab\xba")
-        self.assertEquals(6, poor_allocating_command.missing_allocation_length(10))
+        self.assertEquals(16, poor_allocating_command.required_allocation_length())
 
 
     def test_parse_read_reservations(self):
@@ -56,11 +56,11 @@ class TestPersistentReserveIn(TestCase):
         self.assertEquals(obj.pr_type, 1)
         self.assertEquals(obj.scope, 0)
         self.assertEquals(obj.reservation_key, 0xABBA)
-        self.assertEquals(0, obj.missing_allocation_length(len(PRI_READ_RESERVATIONS_RESPONSE_SAMPLE)))
+        self.assertEquals(24, obj.required_allocation_length())
         poor_allocating_command = PersistentReserveInReadReservationResponse()
         PersistentReserveInReadReservationResponse.unpack(poor_allocating_command,
             PRI_READ_RESERVATIONS_RESPONSE_SAMPLE)
-        self.assertEquals(14, poor_allocating_command.missing_allocation_length(10))
+        self.assertEquals(24, poor_allocating_command.required_allocation_length())
 
     def test_parse_report_capabilities_of_infinibox_machine(self):
         """

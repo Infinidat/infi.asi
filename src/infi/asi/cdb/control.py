@@ -10,7 +10,9 @@ class Control(Struct):
         BitPadding(3),  # 3-5: reserved
         BitField("vendor_specific", 2),  # 6-7: vendor specific
     )
+
 DEFAULT_CONTROL = Control(vendor_specific=0, naca=0)
+
 
 class ControlBuffer(Buffer):
     naca = be_int_field(where=bytes_ref[0].bits[2:3])
