@@ -7,6 +7,7 @@ from infi.instruct.buffer.macros import *
 CDB_OPCODE_RESERVE_6 = 0x16
 CDB_OPCODE_RESERVE_10 = 0x56
 
+
 class Reserve6Command(CDBBuffer):
     """
     The buffer class used for generating the reserve(6) command.
@@ -22,7 +23,10 @@ class Reserve6Command(CDBBuffer):
         command_datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIWriteCommand(
             str(command_datagram), str(self.parameter_list_datagram)))
-        yield result_datagramclass Reserve10ParameterList(CDBBuffer):
+        yield result_datagram
+
+
+class Reserve10ParameterList(CDBBuffer):
     """
     The buffer class used for generating the parameters for the reserve(10) command.
     """
@@ -58,7 +62,7 @@ class Reserve10Command(CDBBuffer):
                 self.parameter_list_datagram = parameter_list_buffer.create_datagram()
                 self.parameter_list_length = len(self.parameter_list_datagram)
                 self.long_id = 1
-    
+
     def execute(self, executer):
         command_datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIWriteCommand(
