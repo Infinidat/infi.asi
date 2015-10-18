@@ -13,11 +13,11 @@ class Reserve6Command(CDBBuffer):
     The buffer class used for generating the reserve(6) command.
     """
     operation_code = be_uint_field(where=bytes_ref[0], set_before_pack=CDB_OPCODE_RESERVE_6)
-    obsolete_1 = be_uint_field(where=bytes_ref[1].bits[0:5], set_before_pack=0)
-    reserved_1 = be_uint_field(where=bytes_ref[1].bits[5:8], set_before_pack=0)
-    obsolete_2 = be_uint_field(where=bytes_ref[2], set_before_pack=0)
-    obsolete_3 = be_uint_field(where=bytes_ref[3:4], set_before_pack=0)
-    control = buffer_field(type=ControlBuffer, where=bytes_ref[5], set_before_pack=DEFAULT_CONTROL_BUFFER)
+    obsolete_1 = be_uint_field(where=bytes_ref[1].bits[0:5], default=0)
+    reserved_1 = be_uint_field(where=bytes_ref[1].bits[5:8], default=0)
+    obsolete_2 = be_uint_field(where=bytes_ref[2], default=0)
+    obsolete_3 = be_uint_field(where=bytes_ref[3:4], default=0)
+    control = buffer_field(type=ControlBuffer, where=bytes_ref[5], default=DEFAULT_CONTROL_BUFFER)
 
     def execute(self, executer):
         command_datagram = self.create_datagram()
@@ -33,20 +33,24 @@ class Reserve10ParameterList(CDBBuffer):
     third_party_device_id = be_uint_field(where=bytes_ref[0:8])
 
 
+class Reserve10ParameterList(CDBBuffer):
+    third_party_device_id = be_uint_field(where=bytes_ref[0:8])
+
 class Reserve10Command(CDBBuffer):
     """
     The buffer class used for generating the reserve(10) command.
     """
-    operation_code = be_uint_field(where=bytes_ref[0], set_before_pack=CDB_OPCODE_RESERVE_6)
-    obsolete_1 = be_uint_field(where=bytes_ref[1].bits[0], set_before_pack=0)
-    long_id = be_uint_field(where=bytes_ref[1].bits[1])
-    reserved_1 = be_uint_field(where=bytes_ref[1].bits[2:4], set_before_pack=0  )
+    operation_code = be_uint_field(where=bytes_ref[0], default=CDB_OPCODE_RESERVE_10)
+    obsolete_1 = be_uint_field(where=bytes_ref[1].bits[0], default=0)
+    long_id = be_uint_field(where=bytes_ref[1].bits[1], default=0)
+    reserved_1 = be_uint_field(where=bytes_ref[1].bits[2:4], default=0)
     third_party = be_uint_field(where=bytes_ref[1].bits[4], default=0)
-    reserved_2 = be_uint_field(where=bytes_ref[1].bits[5:8], set_before_pack=0)
-    obsolete_2 = be_uint_field(where=bytes_ref[2], set_before_pack=0)
-    reserved_3 = be_uint_field(where=bytes_ref[4:7], set_before_pack=0)
-    parameter_list_length = be_uint_field(where=bytes_ref[7:9])
-    control = buffer_field(type=ControlBuffer, where=bytes_ref[9], set_before_pack=DEFAULT_CONTROL_BUFFER)
+    reserved_2 = be_uint_field(where=bytes_ref[1].bits[5:8], default=0)
+    obsolete_2 = be_uint_field(where=bytes_ref[2], default=0)
+    third_party_device_id = be_uint_field(where=bytes_ref[3], default=0)
+    reserved_3 = be_uint_field(where=bytes_ref[4:7], default=0)
+    parameter_list_length = be_uint_field(where=bytes_ref[7:9], default=0)
+    control = buffer_field(type=ControlBuffer, where=bytes_ref[9], default=DEFAULT_CONTROL_BUFFER)
 
     def __init__(self, third_party_device_id=0, **kwargs):
         super(Reserve10Command, self).__init__(**kwargs)
@@ -60,9 +64,13 @@ class Reserve10Command(CDBBuffer):
             else:
                 parameter_list_buffer = Reserve10ParameterList(third_party_device_id=third_party_device_id)
                 self.parameter_list_datagram = parameter_list_buffer.create_datagram()
-                self.parameter_list_length = len(self.parameter_list_datagram)
+                self.parameter_list_length = 8
                 self.long_id = 1
 
+<<<<<<< fe62de9e8ad8c773ebe3a3ad3ebda895d4612cd2
+=======
+
+>>>>>>> Fixed non persistent reserve and release and added tests
     def execute(self, executer):
         command_datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIWriteCommand(

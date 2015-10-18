@@ -12,12 +12,12 @@ class Release6Command(CDBBuffer):
     The buffer class used for generating the release(6) command.
     """
     operation_code = be_uint_field(where=bytes_ref[0], set_before_pack=CDB_OPCODE_RELEASE_6)
-    obsolete_1 = be_uint_field(where=bytes_ref[1].bits[0:5], set_before_pack=0)
-    reserved_1 = be_uint_field(where=bytes_ref[1].bits[5:8], set_before_pack=0)
-    obsolete_2 = be_uint_field(where=bytes_ref[2], set_before_pack=0)
-    reserved_3 = be_uint_field(where=bytes_ref[3], set_before_pack=0)
-    reserved_4 = be_uint_field(where=bytes_ref[4], set_before_pack=0)
-    control = buffer_field(type=ControlBuffer, where=bytes_ref[5], set_before_pack=DEFAULT_CONTROL_BUFFER)
+    obsolete_1 = be_uint_field(where=bytes_ref[1].bits[0:5], default=0)
+    reserved_1 = be_uint_field(where=bytes_ref[1].bits[5:8], default=0)
+    obsolete_2 = be_uint_field(where=bytes_ref[2], default=0)
+    reserved_3 = be_uint_field(where=bytes_ref[3], default=0)
+    reserved_4 = be_uint_field(where=bytes_ref[4], default=0)
+    control = buffer_field(type=ControlBuffer, where=bytes_ref[5], default=DEFAULT_CONTROL_BUFFER)
 
     def execute(self, executer):
         command_datagram = self.create_datagram()
@@ -35,16 +35,17 @@ class Release10Command(CDBBuffer):
     """
     The buffer class used for generating the release(10) command.
     """
-    operation_code = be_uint_field(where=bytes_ref[0], set_before_pack=CDB_OPCODE_RELEASE_6)
-    obsolete_1 = be_uint_field(where=bytes_ref[1].bits[0], set_before_pack=0)
+    operation_code = be_uint_field(where=bytes_ref[0], set_before_pack=CDB_OPCODE_RELEASE_10)
+    obsolete_1 = be_uint_field(where=bytes_ref[1].bits[0], default=0)
     long_id = be_uint_field(where=bytes_ref[1].bits[1])
-    reserved_1 = be_uint_field(where=bytes_ref[1].bits[2:4], set_before_pack=0)
+    reserved_1 = be_uint_field(where=bytes_ref[1].bits[2:4], default=0)
     third_party = be_uint_field(where=bytes_ref[1].bits[4])
-    reserved_2 = be_uint_field(where=bytes_ref[1].bits[5:8], set_before_pack=0)
-    obsolete_2 = be_uint_field(where=bytes_ref[2], set_before_pack=0)
-    reserved_3 = be_uint_field(where=bytes_ref[4:7], set_before_pack=0)
+    reserved_2 = be_uint_field(where=bytes_ref[1].bits[5:8], default=0)
+    obsolete_2 = be_uint_field(where=bytes_ref[2], default=0)
+    third_party_device_id = be_uint_field(where=bytes_ref[3], default=0)
+    reserved_3 = be_uint_field(where=bytes_ref[4:7], default=0)
     parameter_list_length = be_uint_field(where=bytes_ref[7:9])
-    control = buffer_field(type=ControlBuffer, where=bytes_ref[9], set_before_pack=DEFAULT_CONTROL_BUFFER)
+    control = buffer_field(type=ControlBuffer, where=bytes_ref[9], default=DEFAULT_CONTROL_BUFFER)
 
     def __init__(self, third_party_device_id, **kwargs):
         super(Release10Command, self).__init__(**kwargs)
