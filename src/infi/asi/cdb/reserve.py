@@ -54,9 +54,9 @@ class Reserve10Command(CDBBuffer):
 
     def __init__(self, third_party_device_id=0, **kwargs):
         super(Reserve10Command, self).__init__(**kwargs)
-        if (third_party_device_id > 0):
+        if third_party_device_id > 0:
             self.third_party = 1
-            if (third_party_device_id < 255):
+            if third_party_device_id < 255:
                 self.third_party_device_id = third_party_device_id
                 self.long_id = 0
                 self.parameter_list_datagram = None

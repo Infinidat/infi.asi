@@ -49,9 +49,9 @@ class Release10Command(CDBBuffer):
 
     def __init__(self, third_party_device_id, **kwargs):
         super(Release10Command, self).__init__(**kwargs)
-        if (third_party_device_id > 0):
+        if third_party_device_id > 0:
             self.third_party = 1
-            if (third_party_device_id < 255):
+            if third_party_device_id < 255:
                 self.third_party_device_id = third_party_device_id
                 self.parameter_list_datagram = None
                 self.parameter_list_length = 0
@@ -63,8 +63,6 @@ class Release10Command(CDBBuffer):
                 self.long_id = 1
 
     def execute(self, executer):
-        print(self)
-        print(self.command_datagram)
         command_datagram = self.create_datagram()
 
         result_datagram = yield executer.call(SCSIWriteCommand(

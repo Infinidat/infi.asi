@@ -12,7 +12,7 @@ class TestRelease6Command(TestCase):
 
 
 class TestRelease10Command(TestCase):
-    def test_generate_command_short_thirdparty(self):
+    def test_generate_command_no_thirdparty(self):
         """
         Operation code (0x57)
         """
