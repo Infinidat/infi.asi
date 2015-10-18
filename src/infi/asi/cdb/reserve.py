@@ -33,9 +33,6 @@ class Reserve10ParameterList(CDBBuffer):
     third_party_device_id = be_uint_field(where=bytes_ref[0:8])
 
 
-class Reserve10ParameterList(CDBBuffer):
-    third_party_device_id = be_uint_field(where=bytes_ref[0:8])
-
 class Reserve10Command(CDBBuffer):
     """
     The buffer class used for generating the reserve(10) command.
@@ -67,10 +64,6 @@ class Reserve10Command(CDBBuffer):
                 self.parameter_list_length = 8
                 self.long_id = 1
 
-<<<<<<< fe62de9e8ad8c773ebe3a3ad3ebda895d4612cd2
-=======
-
->>>>>>> Fixed non persistent reserve and release and added tests
     def execute(self, executer):
         command_datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIWriteCommand(
