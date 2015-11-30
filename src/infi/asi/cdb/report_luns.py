@@ -38,16 +38,18 @@ class ReportLunsCommand(CDB):
 
         if self.allocation_length >= 16:
             result = ReportLunsData.create_from_string(result_datagram)
-            result.normalize_lun_list()
+            result.normalize_lun_list(self.allow_unsupported_addressing_format)
         else:
             len_result_datagram = 0 if not result_datagram else len(result_datagram)
             assert len_result_datagram == self.allocation_length, "did not get the requested buffer"
             result = result_datagram
         yield result
 
-    def __init__(self, select_report=0, allocation_length=16384):
+    def __init__(self, select_report=0, allocation_length=16384, allow_unsupported_addressing_format=False):
         super(ReportLunsCommand, self).__init__(select_report=select_report,
                                                 allocation_length=allocation_length)
+        self.allow_unsupported_addressing_format = allow_unsupported_addressing_format
+
 
 class ReportLunsData(Struct):
     _fields_ = [
@@ -56,10 +58,14 @@ class ReportLunsData(Struct):
         SumSizeArray("lun_list", ReadPointer("lun_list_length"), UBInt64),
     ]
 
-    def normalize_lun_list(self):
-        for item in self.lun_list:
-            if item & 0xFFFFFFFFFFFF: # there is second/third/fourth level addressing
-                raise UnsupportedLunAdressing(item)
-            if item & 0xC000000000000000: # address method is not 00 (Simple logical unit addressing method)
-                raise UnsupportedLogicalUnitAddressingMethod(item)
+    def _raise_if_unsupported_lun_addressing_format(self, item):
+        if item & 0xFFFFFFFFFFFF: # there is second/third/fourth level addressing
+            raise UnsupportedLunAdressing(item)
+        if item & 0xC000000000000000: # address method is not 00 (Simple logical unit addressing method)
+            raise UnsupportedLogicalUnitAddressingMethod(item)
+
+    def normalize_lun_list(self, allow_unsupported_addressing_format=False):
+        if not allow_unsupported_addressing_format:
+            for item in self.lun_list:
+                self._raise_if_unsupported_lun_addressing_format(item)
         self.lun_list = [item >> 48 for item in self.lun_list]
