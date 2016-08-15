@@ -1,3 +1,4 @@
+import sys
 from . import CDB
 from .. import SCSIReadCommand
 from .operation_code import OperationCode
@@ -6,8 +7,13 @@ from infi.instruct import *
 from ..errors import AsiException
 # spc4r30: 6.4.1 (page 259)
 from infi.instruct import UBInt32
-from cStringIO import StringIO
 from infi.instruct.buffer import *
+
+
+if sys.version_info[0] == 2:
+    from cStringIO import StringIO
+else:
+    from io import StringIO
 
 
 CDB_OPCODE = 0xA3
