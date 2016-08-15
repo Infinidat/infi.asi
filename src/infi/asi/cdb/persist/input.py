@@ -28,7 +28,7 @@ class PersistentReserveInReadKeysResponse(CDBBuffer):
     additional_length = be_uint_field(where=bytes_ref[4:8])
     key_list = list_field(where=bytes_ref[8:8+additional_length],
                           type=b_uint64,
-                          n=additional_length / 8, # divide by number of bytes
+                          n=additional_length // 8, # divide by number of bytes
                                                    # per key.
                           unpack_if=input_buffer_length >= additional_length + 8)
 
