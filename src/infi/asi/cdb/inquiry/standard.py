@@ -23,7 +23,7 @@ class StandardInquiryExtendedDataBuffer(Buffer):
     # bytes_ref[21] - reserved
     version_descriptors = list_field(type=b_uint16,
                                      where=bytes_ref[22:],
-                                     n=min_ref((input_buffer_length - 22) / 2, 8),  # / 2 because sizeof(uint16) == 2
+                                     n=min_ref((input_buffer_length - 22) // 2, 8),  # / 2 because sizeof(uint16) == 2
                                      unpack_if=input_buffer_length >= 24)
     # bytes_ref[38:60] - reserved
     vendor_specific_2 = bytearray_field(where=bytes_ref[60:], unpack_if=input_buffer_length >= 61,

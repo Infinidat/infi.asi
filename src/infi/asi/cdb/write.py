@@ -35,7 +35,7 @@ class Write6Command(CDB):
         assert self.logical_block_address < 2 ** 21, "lba > 2**21"
         assert len(buffer) % block_size == 0, "buffer length {0} is not a multiple of {1}".format(len(buffer), block_size)
 
-        num_blocks = len(buffer) / block_size
+        num_blocks = len(buffer) // block_size
         assert 0 < num_blocks <= 256, "number_of_blocks should be in range [1, 2**8]"
         if num_blocks == 256:
             self.transfer_length = 0
@@ -73,7 +73,7 @@ class Write10Command(CDB):
         self.logical_block_address = logical_block_address
         self.buffer = buffer
         self.block_size = block_size
-        self.transfer_length = len(buffer) / block_size
+        self.transfer_length = len(buffer) // block_size
         assert len(buffer) % block_size == 0, "buffer length {0} is not a multiple of {1}".format(len(buffer), block_size)
         assert self.logical_block_address < 2 ** 32, "lba > 2**32"
         assert 0 <= self.transfer_length < 2 ** 16, "number_of_blocks should be in range [0, 2**16)"
@@ -107,7 +107,7 @@ class Write12Command(CDB):
         self.logical_block_address = logical_block_address
         self.buffer = buffer
         self.block_size = block_size
-        self.transfer_length = len(buffer) / block_size
+        self.transfer_length = len(buffer) // block_size
         assert len(buffer) % block_size == 0, "buffer length {0} is not a multiple of {1}".format(len(buffer), block_size)
         assert self.logical_block_address < 2 ** 32, "lba > 2**32"
         assert 0 < self.transfer_length < 2 ** 32, "number_of_blocks should be in range [0, 2**32)"
@@ -141,7 +141,7 @@ class Write16Command(CDB):
         self.logical_block_address = logical_block_address
         self.buffer = buffer
         self.block_size = block_size
-        self.transfer_length = len(buffer) / block_size
+        self.transfer_length = len(buffer) // block_size
         assert len(buffer) % block_size == 0, "buffer length {0} is not a multiple of {1}".format(len(buffer), block_size)
         assert self.logical_block_address < 2 ** 64, "lba > 2**64"
         assert 0 <= self.transfer_length < 2 ** 32, "number_of_blocks should be in range [0, 2**32)"
