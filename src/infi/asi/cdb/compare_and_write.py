@@ -38,7 +38,7 @@ class CompareAndWriteCommand(CDB):
         self.buffer = buffer
         self.block_size = block_size
         self.number_of_logical_blocks = number_of_logical_blocks
-        self.transfer_length = len(buffer) / block_size
+        self.transfer_length = len(buffer) // block_size
         assert len(buffer) % block_size == 0, "buffer length {0} is not a multiple of {1}".format(len(buffer), block_size)
 
     def execute(self, executer):

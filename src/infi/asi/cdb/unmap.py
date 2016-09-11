@@ -28,7 +28,7 @@ class UnmapCommand(CDB):
             unmap_obj=UnmapParameterListBlock(range[0], range[1])
             self.unmap_ubjects.append(unmap_obj)
             blocks.append(unmap_obj.datagram)
-        block_stream = ''.join(blocks)
+        block_stream = b''.join(blocks)
 
         self.header_obj=UnmapParameterListHeader(len(block_stream))
         self.buffer=self.header_obj.datagram +block_stream
