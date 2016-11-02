@@ -47,7 +47,7 @@ class Release10Command(CDBBuffer):
     parameter_list_length = be_uint_field(where=bytes_ref[7:9], default=0)
     control = buffer_field(type=ControlBuffer, where=bytes_ref[9], default=DEFAULT_CONTROL_BUFFER)
 
-    def __init__(self, third_party_device_id, **kwargs):
+    def __init__(self, third_party_device_id=0, **kwargs):
         super(Release10Command, self).__init__(**kwargs)
         self.third_party = 0
         self.parameter_list_datagram = None
