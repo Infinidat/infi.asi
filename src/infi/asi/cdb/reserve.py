@@ -21,8 +21,7 @@ class Reserve6Command(CDBBuffer):
 
     def execute(self, executer):
         command_datagram = self.create_datagram()
-        result_datagram = yield executer.call(SCSIWriteCommand(
-            str(command_datagram), str(None)))
+        result_datagram = yield executer.call(SCSIWriteCommand(str(command_datagram), None))
         yield result_datagram
 
 
