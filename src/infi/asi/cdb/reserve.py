@@ -16,7 +16,7 @@ class Reserve6Command(CDBBuffer):
     obsolete_1 = be_uint_field(where=bytes_ref[1].bits[0:5], default=0)
     reserved_1 = be_uint_field(where=bytes_ref[1].bits[5:8], default=0)
     obsolete_2 = be_uint_field(where=bytes_ref[2], default=0)
-    obsolete_3 = be_uint_field(where=bytes_ref[3:4], default=0)
+    obsolete_3 = be_uint_field(where=bytes_ref[3:5], default=0)
     control = buffer_field(type=ControlBuffer, where=bytes_ref[5], default=DEFAULT_CONTROL_BUFFER)
 
     def execute(self, executer):
