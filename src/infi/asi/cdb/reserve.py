@@ -16,13 +16,12 @@ class Reserve6Command(CDBBuffer):
     obsolete_1 = be_uint_field(where=bytes_ref[1].bits[0:5], default=0)
     reserved_1 = be_uint_field(where=bytes_ref[1].bits[5:8], default=0)
     obsolete_2 = be_uint_field(where=bytes_ref[2], default=0)
-    obsolete_3 = be_uint_field(where=bytes_ref[3:4], default=0)
+    obsolete_3 = be_uint_field(where=bytes_ref[3:5], default=0)
     control = buffer_field(type=ControlBuffer, where=bytes_ref[5], default=DEFAULT_CONTROL_BUFFER)
 
     def execute(self, executer):
         command_datagram = self.create_datagram()
-        result_datagram = yield executer.call(SCSIWriteCommand(
-            str(command_datagram), str(self.parameter_list_datagram)))
+        result_datagram = yield executer.call(SCSIWriteCommand(str(command_datagram), ''))
         yield result_datagram
 
 
@@ -51,12 +50,13 @@ class Reserve10Command(CDBBuffer):
 
     def __init__(self, third_party_device_id=0, **kwargs):
         super(Reserve10Command, self).__init__(**kwargs)
+        self.third_party = 0
+        self.parameter_list_datagram = None
         if third_party_device_id > 0:
             self.third_party = 1
             if third_party_device_id < 255:
                 self.third_party_device_id = third_party_device_id
                 self.long_id = 0
-                self.parameter_list_datagram = None
                 self.parameter_list_length = 0
             else:
                 parameter_list_buffer = Reserve10ParameterList(third_party_device_id=third_party_device_id)

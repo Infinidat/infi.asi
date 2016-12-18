@@ -21,8 +21,7 @@ class Release6Command(CDBBuffer):
 
     def execute(self, executer):
         command_datagram = self.create_datagram()
-        result_datagram = yield executer.call(SCSIWriteCommand(
-            str(command_datagram), str(self.parameter_list_datagram)))
+        result_datagram = yield executer.call(SCSIWriteCommand(str(command_datagram), ''))
         yield result_datagram
 
 class Release10ParameterList(CDBBuffer):
@@ -47,13 +46,15 @@ class Release10Command(CDBBuffer):
     parameter_list_length = be_uint_field(where=bytes_ref[7:9], default=0)
     control = buffer_field(type=ControlBuffer, where=bytes_ref[9], default=DEFAULT_CONTROL_BUFFER)
 
-    def __init__(self, third_party_device_id, **kwargs):
+    def __init__(self, third_party_device_id=0, **kwargs):
         super(Release10Command, self).__init__(**kwargs)
+        self.third_party = 0
+        self.parameter_list_datagram = None
         if third_party_device_id > 0:
             self.third_party = 1
             if third_party_device_id < 255:
                 self.third_party_device_id = third_party_device_id
-                self.parameter_list_datagram = None
+
                 self.parameter_list_length = 0
                 self.long_id = 0
             else:
