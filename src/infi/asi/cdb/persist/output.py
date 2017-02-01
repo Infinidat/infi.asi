@@ -84,7 +84,7 @@ class PersistentReserveOutCommand(CDBBuffer):
 
     def __init__(self, service_action, reservation_key=0, service_action_reservation_key=0,
                  pr_type=PERSISTENT_RESERVE_OUT_TYPES.WRITE_EXCLUSIVE, **kwargs):
-        super(PersistentReserveOutCommand, self).__init__(**kwargs)
+        super(PersistentReserveOutCommand, self).__init__()
         self.service_action = service_action
         self.pr_type = pr_type
         assert self.service_action in SERVICE_ACTION_TO_PARAMETER_LIST_CLASS, \
