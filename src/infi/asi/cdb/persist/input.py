@@ -55,7 +55,7 @@ class PersistentReserveInReadReservationResponse(CDBBuffer):
         return self.additional_length + 8
 
 
-class PersistentReserveInReportCapabilitesResponse(CDBBuffer):
+class PersistentReserveInReportCapabilitiesResponse(CDBBuffer):
     """
     The buffer class for parsing the response of the report capabilities
     service action of the persistent reserve in command.
@@ -81,7 +81,7 @@ class PersistentReserveInReportCapabilitesResponse(CDBBuffer):
     write_exclusive_all_registrants = be_uint_field(where=bytes_ref[4].bits[7])
     exclusive_acccess_all_registrants = be_uint_field(where=bytes_ref[5].bits[0])
     reserved_4 = be_uint_field(where=bytes_ref[6:8])
-    
+
     def required_allocation_length(self):
         return 8
 
@@ -157,6 +157,6 @@ used for parsing responses from that action.
 SERVICE_ACTION_TO_RESPONSE_BUFFER_CLASS = {
     PERSISTENT_RESERVE_IN_SERVICE_ACTION_CODES.READ_KEYS: PersistentReserveInReadKeysResponse,
     PERSISTENT_RESERVE_IN_SERVICE_ACTION_CODES.READ_RESERVATION: PersistentReserveInReadReservationResponse,
-    PERSISTENT_RESERVE_IN_SERVICE_ACTION_CODES.REPORT_CAPABILITES: PersistentReserveInReportCapabilitesResponse,
+    PERSISTENT_RESERVE_IN_SERVICE_ACTION_CODES.REPORT_CAPABILITES: PersistentReserveInReportCapabilitiesResponse,
     PERSISTENT_RESERVE_IN_SERVICE_ACTION_CODES.READ_FULL_STATUS: PersistentReserveInReadFullStatusResponse
 }

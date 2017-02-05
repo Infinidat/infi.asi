@@ -36,7 +36,7 @@ class TestPersistentReserveIn(TestCase):
         self.assertEquals(obj.pr_generation, 0x00000035)
         self.assertEquals(obj.key_list, [0xABBA])
         self.assertEquals(16, obj.required_allocation_length())
-        poor_allocating_command = PersistentReserveInReadKeysResponse() 
+        poor_allocating_command = PersistentReserveInReadKeysResponse()
         PersistentReserveInReadKeysResponse.unpack(poor_allocating_command,
             b"\x00\x00\x00\x35\x00\x00\x00\x08\x00\x00\x00\x00\x00\x00\xab\xba")
         self.assertEquals(16, poor_allocating_command.required_allocation_length())
@@ -68,9 +68,9 @@ class TestPersistentReserveIn(TestCase):
         Service action: Read Reservation (0x01)
         Allocation length (0x20)
         """
-        from infi.asi.cdb.persist.input import PersistentReserveInReportCapabilitesResponse
-        obj = PersistentReserveInReportCapabilitesResponse()
-        PersistentReserveInReportCapabilitesResponse.unpack(obj, b"\x00\x08\x10\x00\x00\x00\x00\x00")
+        from infi.asi.cdb.persist.input import PersistentReserveInReportCapabilitiesResponse
+        obj = PersistentReserveInReportCapabilitiesResponse()
+        PersistentReserveInReportCapabilitiesResponse.unpack(obj, b"\x00\x08\x10\x00\x00\x00\x00\x00")
         self.assertEquals(obj.length, 0x0008)
         self.assertEquals(obj.persist_through_power_lost_capable, 0)
         self.assertEquals(obj.reserved_1, 0)
@@ -97,9 +97,9 @@ class TestPersistentReserveIn(TestCase):
         Service action: Read Reservation (0x01)
         Allocation length (0x20)
         """
-        from infi.asi.cdb.persist.input import PersistentReserveInReportCapabilitesResponse
-        obj = PersistentReserveInReportCapabilitesResponse()
-        PersistentReserveInReportCapabilitesResponse.unpack(obj, b"\x00\x08\x89\xF1\xA2\x01\x00\x00")
+        from infi.asi.cdb.persist.input import PersistentReserveInReportCapabilitiesResponse
+        obj = PersistentReserveInReportCapabilitiesResponse()
+        PersistentReserveInReportCapabilitiesResponse.unpack(obj, b"\x00\x08\x89\xF1\xA2\x01\x00\x00")
         self.assertEquals(obj.length, 0x0008)
         self.assertEquals(obj.persist_through_power_lost_capable, 1)
         self.assertEquals(obj.reserved_1, 0)
@@ -129,7 +129,7 @@ class TestPersistentReserveOut(TestCase):
         """
         from infi.asi.cdb.persist.output import PersistentReserveOutCommand, PERSISTENT_RESERVE_OUT_SERVICE_ACTION_CODES
         obj = PersistentReserveOutCommand(service_action=PERSISTENT_RESERVE_OUT_SERVICE_ACTION_CODES.RESERVE)
-        self.assertEquals(obj.pack(), b"\x5f\x01\x01\x00\x00\x00\x00\x00\x18\x00")  
+        self.assertEquals(obj.pack(), b"\x5f\x01\x01\x00\x00\x00\x00\x00\x18\x00")
 
     def test_generate_parameter_list_basic(self):
         """
