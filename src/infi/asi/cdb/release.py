@@ -67,5 +67,6 @@ class Release10Command(CDBBuffer):
         command_datagram = self.create_datagram()
 
         result_datagram = yield executer.call(SCSIWriteCommand(
-            bytes(command_datagram), bytes(self.parameter_list_datagram)))
+            bytes(command_datagram),
+            bytes(self.parameter_list_datagram) if self.parameter_list_datagram else b''))
         yield result_datagram
