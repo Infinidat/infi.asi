@@ -73,7 +73,7 @@ class ReceiveCopyParametersTestCase(unittest.TestCase):
         response = ReceiveCopyOperatingParametersResponse()
         response.unpack(RECEIVE_COPY_OPERATING_PARAMETERS_RESPONSE_DATA)
         self.assertEquals(response.available_data, 42)
-        self.assertEquals(response.snlid, 1)
+        self.assertEquals(response.snlid, -1)
         self.assertEquals(response.max_cscd_descriptor_count, 2)
         self.assertEquals(response.max_segment_descriptor_count, 1)
         self.assertEquals(response.max_descriptor_list_length, 92)

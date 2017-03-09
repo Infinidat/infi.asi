@@ -17,7 +17,7 @@ class BlockLimitsVPDPageBuffer(Buffer):
     maximum_unmap_lba_count = be_uint_field(where=bytes_ref[20:24])
     maximum_unmap_block_descriptor_count = be_uint_field(where=bytes_ref[24:28])
     optimal_unmap_granularity = be_uint_field(where=bytes_ref[28:32])
-    unmap_granularity_alignment = be_uint_field(where=(bytes_ref[35] + bytes_ref[34] + bytes_ref[33] + bytes_ref[32].bits[0:7]))
+    unmap_granularity_alignment = be_uint_field(where=bytes_ref[32].bits[0:7] + bytes_ref[33:36])
     ugavalid = be_uint_field(where=bytes_ref[32].bits[7])
     maximum_write_same_length = be_uint_field(where=bytes_ref[36:44])
 

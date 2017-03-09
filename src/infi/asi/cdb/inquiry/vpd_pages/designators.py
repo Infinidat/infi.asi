@@ -54,17 +54,13 @@ class NAA_IEEE_Extended_Designator(NAA_Descriptor):
 
 # spc4r30, section 7.8.5.6.2, page 619
 class NAA_Locally_Assigned_Designator(NAA_Descriptor):
-    locally_administered_value = be_uint_field(where=(bytes_ref[11] + bytes_ref[10] + bytes_ref[9] +
-                                                      bytes_ref[8] + bytes_ref[7] + bytes_ref[6] + bytes_ref[5] +
-                                                      bytes_ref[4].bits[0:4]))
+    locally_administered_value = be_uint_field(where=bytes_ref[4].bits[0:4] + bytes_ref[5:12])
 
 
 # spc4r30, section 7.8.5.6.4, page 620
 class NAA_IEEE_Registered_Designator(NAA_Descriptor):
-    ieee_company_id = be_uint_field(where=(bytes_ref[7].bits[4:8] + bytes_ref[6] + bytes_ref[5] +
-                                           bytes_ref[4].bits[0:4]))
-    vendor_specific_identifier = be_uint_field(where=(bytes_ref[11] + bytes_ref[10] + bytes_ref[9] +
-                                                      bytes_ref[8] + bytes_ref[7].bits[0:4]))
+    ieee_company_id = be_uint_field(where=(bytes_ref[4].bits[0:4] + bytes_ref[5:7] + bytes_ref[7].bits[4:8]))
+    vendor_specific_identifier = be_uint_field(where=(bytes_ref[7].bits[0:4] + bytes_ref[8:12]))
 
 
 # spc4r30, section 7.8.5.6.5, page 620
