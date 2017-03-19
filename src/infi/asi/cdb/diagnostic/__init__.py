@@ -20,7 +20,7 @@ class ReceiveDiagnosticResultCommand(CDBBuffer):
 
     def execute(self, executer):
         datagram = self.create_datagram()
-        result_datagram = yield executer.call(SCSIReadCommand(str(datagram), self.allocation_length))
+        result_datagram = yield executer.call(SCSIReadCommand(bytes(datagram), self.allocation_length))
         result = self.result_class(conf_page=self.conf_page)
         result.unpack(result_datagram)
         yield result
