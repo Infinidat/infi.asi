@@ -26,5 +26,5 @@ class LogSenseCommand(CDBBuffer):
 
     def execute(self, executer):
         datagram = self.create_datagram()
-        result_datagram = yield executer.call(SCSIReadCommand(str(datagram), self.allocation_length))
+        result_datagram = yield executer.call(SCSIReadCommand(bytes(datagram), self.allocation_length))
         yield result_datagram

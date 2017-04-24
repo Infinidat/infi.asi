@@ -100,7 +100,7 @@ class PersistentReserveOutCommand(CDBBuffer):
     def execute(self, executer):
         command_datagram = self.create_datagram()
         result_datagram = yield executer.call(SCSIWriteCommand(
-            str(command_datagram), str(self.parameter_list_datagram)))
+            bytes(command_datagram), bytes(self.parameter_list_datagram)))
         yield result_datagram
 
 """

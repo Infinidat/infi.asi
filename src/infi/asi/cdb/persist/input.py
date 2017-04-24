@@ -139,7 +139,7 @@ class PersistentReserveInCommand(CDBBuffer):
             "A minimum of 8 bytes must be allocated."
 
     def execute(self, executer):
-        command_datagram = str(self.create_datagram())
+        command_datagram = bytes(self.create_datagram())
         result_datagram = yield executer.call(SCSIReadCommand(command_datagram,
             self.allocation_length))
         assert self.service_action in SERVICE_ACTION_TO_RESPONSE_BUFFER_CLASS, \
