@@ -1,4 +1,4 @@
-from . import CommandExecuterBase, DEFAULT_TIMEOUT, SCSIReadCommand, SCSIWriteCommand
+from . import CommandExecuterBase, DEFAULT_TIMEOUT_IN_SEC, SCSIReadCommand, SCSIWriteCommand
 from . import gevent_friendly
 from .errors import AsiSCSIError, AsiRequestQueueFullError
 from ctypes import *
@@ -185,7 +185,7 @@ class SCSICMD(Structure):
         return sizeof(cls)
 
 class SolarisCommandExecuter(CommandExecuterBase):
-    def __init__(self, io, max_queue_size=1, timeout=DEFAULT_TIMEOUT):
+    def __init__(self, io, max_queue_size=1, timeout=DEFAULT_TIMEOUT_IN_SEC):
         super(SolarisCommandExecuter, self).__init__(max_queue_size)
         self.io = io
         self.timeout = timeout
