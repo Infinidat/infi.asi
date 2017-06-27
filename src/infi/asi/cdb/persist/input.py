@@ -75,11 +75,11 @@ class PersistentReserveInReportCapabilitiesResponse(CDBBuffer):
     type_mask_valid = be_uint_field(where=bytes_ref[3].bits[7])
     # spc-4_rev36: perssitent reserve type mask, Table 211, page 380
     write_exclusive = be_uint_field(where=bytes_ref[4].bits[1])
-    exclusive_acccess = be_uint_field(where=bytes_ref[4].bits[3])
+    exclusive_access = be_uint_field(where=bytes_ref[4].bits[3])
     write_exclusive_registrants_only = be_uint_field(where=bytes_ref[4].bits[5])
-    exclusive_acccess_registrants_only = be_uint_field(where=bytes_ref[4].bits[6])
+    exclusive_access_registrants_only = be_uint_field(where=bytes_ref[4].bits[6])
     write_exclusive_all_registrants = be_uint_field(where=bytes_ref[4].bits[7])
-    exclusive_acccess_all_registrants = be_uint_field(where=bytes_ref[5].bits[0])
+    exclusive_access_all_registrants = be_uint_field(where=bytes_ref[5].bits[0])
     reserved_4 = be_uint_field(where=bytes_ref[6:8])
 
     def required_allocation_length(self):

@@ -84,11 +84,11 @@ class TestPersistentReserveIn(TestCase):
         self.assertEquals(obj.allow_commands, 0)
         self.assertEquals(obj.type_mask_valid, 0)
         self.assertEquals(obj.write_exclusive, 0)
-        self.assertEquals(obj.exclusive_acccess, 0)
+        self.assertEquals(obj.exclusive_access, 0)
         self.assertEquals(obj.write_exclusive_registrants_only, 0)
-        self.assertEquals(obj.exclusive_acccess_registrants_only, 0)
+        self.assertEquals(obj.exclusive_access_registrants_only, 0)
         self.assertEquals(obj.write_exclusive_all_registrants, 0)
-        self.assertEquals(obj.exclusive_acccess_all_registrants, 0)
+        self.assertEquals(obj.exclusive_access_all_registrants, 0)
         self.assertEquals(obj.reserved_4, 0)
 
     def test_parse_report_capabilities_of_highly_capable_machine(self):
@@ -113,11 +113,11 @@ class TestPersistentReserveIn(TestCase):
         self.assertEquals(obj.allow_commands, 0x7)
         self.assertEquals(obj.type_mask_valid, 1)
         self.assertEquals(obj.write_exclusive, 1)
-        self.assertEquals(obj.exclusive_acccess, 0)
+        self.assertEquals(obj.exclusive_access, 0)
         self.assertEquals(obj.write_exclusive_registrants_only, 1)
-        self.assertEquals(obj.exclusive_acccess_registrants_only, 0)
+        self.assertEquals(obj.exclusive_access_registrants_only, 0)
         self.assertEquals(obj.write_exclusive_all_registrants, 1)
-        self.assertEquals(obj.exclusive_acccess_all_registrants, 1)
+        self.assertEquals(obj.exclusive_access_all_registrants, 1)
         self.assertEquals(obj.reserved_4, 0)
 
 class TestPersistentReserveOut(TestCase):
