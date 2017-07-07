@@ -242,7 +242,7 @@ class LinuxCommandExecuter(CommandExecuterBase):
             if response_sgio.host_status == 0x07:
                 return (AsiRequestQueueFullError(), packet_id)
             if response_sgio.host_status == SCSI_STATUS_CODES['SCSI_STATUS_RESERVATION_CONFLICT']:
-                return (AsiReservationConflictError(), packet_id))
+                return (AsiReservationConflictError(), packet_id)
             error = AsiSCSIError(("SCSI response status is not zero: %s" +
                                   "(driver status: %s, host status: %s)") %
                                  (prettify_status(response_sgio.status, SCSI_STATUS_CODES),
