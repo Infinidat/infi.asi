@@ -22,5 +22,10 @@ class AsiRequestQueueFullError(AsiException):
     def __init__(self):
         super(AsiRequestQueueFullError, self).__init__("Internal SCSI request queue is full, consider increasing it "
                                                        "using max_queue_size or call wait() to finish pending requests")
+
+class AsiReservationConflictError(AsiSCSIError):
+    def __init__(self):
+        super(AsiReservationConflictError, self).__init__("SCSI reservation conflict")
+
 class AsiInternalError(AsiException):
     pass
