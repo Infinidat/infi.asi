@@ -97,7 +97,7 @@ class PersistentReserveInReadFullStatusDescriptor(CDBBuffer):
     all_target_ports = be_uint_field(where=bytes_ref[12].bits[1])
     pr_type = be_uint_field(where=bytes_ref[13].bits[0:4])
     scope = be_uint_field(where=bytes_ref[13].bits[4:8])
-    relative_target_port_identifier = be_uint_field(where=bytes_ref[22:23])
+    relative_target_port_identifier = be_uint_field(where=bytes_ref[18:20])
     additional_length = be_uint_field(where=bytes_ref[20:24])
     transport_id = buffer_field(type=TransportId,
                                 where=bytes_ref[24:additional_length + 24])
