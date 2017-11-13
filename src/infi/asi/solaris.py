@@ -1,4 +1,5 @@
 from . import CommandExecuterBase, DEFAULT_TIMEOUT_IN_SEC, SCSIReadCommand, SCSIWriteCommand
+from . import SCSI_STATUS_CODES
 from . import gevent_friendly
 from .errors import AsiSCSIError, AsiRequestQueueFullError
 from ctypes import *
@@ -75,7 +76,7 @@ struct uscsi_cmd {
 USCSI_SILENT = 0x00000001  # no error messages
 USCSI_DIAGNOSE = 0x00000002  # fail if any error occurs
 # NOTE: set USCSI_DIAGNOSE and you are responsible for all retry/recovery
-USCSI_ISOLATE  = 0x00000004  # isolate from normal commands
+USCSI_ISOLATE = 0x00000004  # isolate from normal commands
 USCSI_READ = 0x00000008  # get data from device
 USCSI_WRITE = 0x00000000  # send data to device
 
@@ -98,7 +99,7 @@ USCSICMD = USCSIIOC | 201  # user scsi command
 
 SENSE_SIZE = 0xFF
 
-USCSI_DEFAULT_FLAGS = USCSI_REASON | USCSI_DIAGNOSE
+USCSI_DEFAULT_FLAGS = USCSI_REASON | USCSI_DIAGNOSE | USCSI_RQENABLE
 
 class SCSICMD(Structure):
     _fields_ = [
@@ -122,8 +123,8 @@ class SCSICMD(Structure):
 
     def init_sense_buffer(self):
         self.sense_buffer = create_string_buffer(SENSE_SIZE)
-        self.uscsi_bufaddr = cast(self.sense_buffer, c_void_p)
-        self.uscsi_buflen = sizeof(self.sense_buffer)
+        self.uscsi_rqbuf = cast(self.sense_buffer, c_void_p)
+        self.uscsi_rqlen = sizeof(self.sense_buffer)
 
     def init_command_buffer(self, command):
         self.command_buffer = create_string_buffer(command, len(command))
@@ -184,6 +185,7 @@ class SCSICMD(Structure):
     def sizeof(cls):
         return sizeof(cls)
 
+
 class SolarisCommandExecuter(CommandExecuterBase):
     def __init__(self, io, max_queue_size=1, timeout=DEFAULT_TIMEOUT_IN_SEC):
         super(SolarisCommandExecuter, self).__init__(max_queue_size)
@@ -195,7 +197,12 @@ class SolarisCommandExecuter(CommandExecuterBase):
 
     def _os_send(self, os_data):
         self.buffer = os_data.to_raw()
-        gevent_friendly(ioctl)(self.io.fd, USCSICMD, self.buffer)
+        # IMPORTANT: we must pass a ctypes string for the ioctl, and not just a
+        # string, otherwise the ioctl won't be able to modify relevant status
+        # values in the buffer (e.g. uscsi_status):
+        buffer_ctypes_string = create_string_buffer(self.buffer)
+        gevent_friendly(ioctl)(self.io.fd, USCSICMD, buffer_ctypes_string)
+        self.buffer = buffer_ctypes_string.raw
         yield len(self.buffer)
 
     def _handle_raw_response(self, raw):
@@ -206,6 +213,11 @@ class SolarisCommandExecuter(CommandExecuterBase):
         response_status = pack("<h", response_cmd.uscsi_status)
         response_status_code = unpack("b", response_status[0])[0]
         response_reason_code = unpack("b", response_status[1])[0]
+
+        if response_status_code & SCSI_STATUS_CODES['SCSI_STATUS_CHECK_CONDITION']:
+            logger.debug("response_cmd.status = 0x{:x}".format(response_cmd.uscsi_status))
+            return (self._check_condition(string_at(response_cmd.uscsi_rqbuf, SENSE_SIZE)), packet_id)
+            raise StopIteration()
 
         if response_status_code != 0:
             return (AsiSCSIError(("SCSI response status is not zero: 0x%02x " +
