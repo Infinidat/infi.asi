@@ -66,7 +66,7 @@ class PersistentReserveOutCommandRegisterAndMoveParameterList(CDBBuffer):
     def __init__(self, transport_id, **kwargs):
         super(PersistentReserveOutCommandRegisterAndMoveParameterList, self).__init__(**kwargs)        
         self.transport_id = transport_id
-        self.transport_length = len(transport_id.pack())
+        self.transport_id_length = len(transport_id.pack())
 
 
 class PersistentReserveOutCommand(CDBBuffer):
