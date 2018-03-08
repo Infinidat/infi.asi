@@ -89,7 +89,8 @@ class LogicalUnitGroupDesignator(DesignatorDescriptor):
 
 # spc4r30, section 7.8.5.10, page 622
 class MD5LogicalUnitDesignator(DesignatorDescriptor):
-    md5_logical_unit_identifier = bytearray_field(where=bytes_ref[6:8])
+    designator_length = be_uint_field(where=bytes_ref[3], set_before_pack=len_ref(self_ref.md5_logical_unit_identifier))
+    md5_logical_unit_identifier = bytearray_field(where=bytes_ref[4:4+designator_length])
 
 
 # spc4r30, section 7.8.5.11, page 624
