@@ -146,24 +146,6 @@ SCSI_DESIGNATOR_ASSOCIATIONS = {0x00: 'Addressed logical unit',
                                 0x03: 'Reserved [0x3]'
                                 }
 
-# Working Draft SCSI Primary Commands - 4 (SPC-4) - Tables 532- 551 (page 615- 624)
-SCSI_DESIGNATOR_TYPE_OUTPUT = {0x03: {0x02: '      NAA 2, vendor specific identifier A: {vendor_specific_identifier_a}\n' +
-                                            '      IEEE Company_id: {ieee_company_id}\n' +
-                                            '      vendor specific identifier B: {vendor_specific_identifier_b}',
-                                      0x03: '      NAA 3, Locally assigned:',
-                                      0x05: '      NAA 5, IEEE Company_id: {ieee_company_id}\n' +
-                                            '      Vendor Specific Identifier: {vendor_specific_identifier}',
-                                      0x06: '      NAA 6, IEEE Company_id: {ieee_company_id}\n' +
-                                            '      Vendor Specific Identifier: {vendor_specific_identifier}\n' +
-                                            '      Vendor Specific Identifier Extension: {vendor_specific_identifier_extension}\n' +
-                                            '      [{packed_string}]'},
-                               0x04: '      Relative target port: {relative_target_port_identifier}',
-                               0x05: '      Target port group: {target_port_group}',
-                               0x06: '      Logical unit group: {logical_group}',
-                               0x07: '      MD5 logical unit identifier:\n{md5_logical_identifier}',
-                               0x08: '      SCSI name string:\n{scsi_name_string}',
-                               0x0a: '      Locally assigned UUID: {assigned_uuid}',
-                               }
 
 SUPPORTED_VPD_PAGES_COMMANDS = {
     INQUIRY_PAGE_SUPPORTED_VPD_PAGES: SupportedVPDPagesCommand,
@@ -185,8 +167,10 @@ SUPPORTED_VPD_PAGES_DATA = {
     INQUIRY_PAGE_VERITAS: VeritasVPDPageBuffer
 }
 
+
 def get_vpd_page(page_code):
     return SUPPORTED_VPD_PAGES_COMMANDS.get(page_code, UnknownVPDPageCommand(page_code))
+
 
 def get_vpd_page_data(page_code):
     return SUPPORTED_VPD_PAGES_DATA.get(page_code, UnknownVPDPageBuffer)
