@@ -9,6 +9,7 @@ class EVPDInquiryCommand(InquiryCommand):
 
 
 class CustomDefaultDict(defaultdict):
+
     def __missing__(self, key):
         if self.default_factory is None:
             raise KeyError((key,))
@@ -43,12 +44,12 @@ SCSI_PERIPHERAL_DEVICE_TYPE = {0x00: "disk",
                                0x07: "optical memory device",
                                0x08: "medium changer",
                                0x09: "communications",
-                               0xa: "graphics [0xa]",
-                               0xb: "graphics [0xb]",
-                               0xc: "storage array controller",
-                               0xd: "enclosure services device",
-                               0xe: "simplified direct access device",
-                               0xf: "optical card reader/writer device",
+                               0x0a: "graphics [0xa]",
+                               0x0b: "graphics [0xb]",
+                               0x0c: "storage array controller",
+                               0x0d: "enclosure services device",
+                               0x0e: "simplified direct access device",
+                               0x0f: "optical card reader/writer device",
                                0x10: "bridge controller commands",
                                0x11: "object based storage",
                                0x12: "automation/driver interface",
@@ -65,6 +66,17 @@ SCSI_PERIPHERAL_DEVICE_TYPE = {0x00: "disk",
                                0x1d: "0x1d",
                                0x1e: "well known logical unit",
                                0x1f: "no physical device on this lu"}
+
+# Working Draft SCSI Primary Commands - 4 (SPC-4) - Table 142 (pages 263)
+SCSI_VERSION_NAME = {0x00: "no conformance claimed",
+                     0x01: "SCSI-1",
+                     0x02: "SCSI-2",
+                     0x03: "SPC",
+                     0x04: "SPC-2",
+                     0x05: "SPC-3",
+                     0x06: "SPC-4",
+                     0x07: "SPC-5",
+                     }
 
 # Working Draft SCSI Primary Commands - 4 (SPC-4) - Table 517 (page 605)
 SCSI_VPD_NAME = {0x00: "Supported VPD pages",
@@ -86,25 +98,27 @@ SCSI_VPD_NAME = {0x00: "Supported VPD pages",
                  0x90: "Protocol-specific logical unit information",
                  0x91: "Protocol-specific port information",
                  0x92: "SCSI Feature sets",
+                 # https://wiki.infinidat.com/display/INFINIBOX10/SCSI+Inquiry+Command#SCSIInquiryCommand-6.INQUIRYPageB0h-BlockLimitsPage
                  0xb0: {0x00: "Block limits (sbc2)",
                         0x01: "Sequential access device capabilities (ssc3)",
                         0x11: "OSD information (osd)"
-                       },
+                        },
                  0xb1: {0x00: "Block device characteristics (sbc3)",
                         0x11: "Security token (osd)",
-                        0xd: "Enclosure services device characteristics (ses4)"
-                       },
+                        0x0d: "Enclosure services device characteristics (ses4)"
+                        },
+                 # https://wiki.infinidat.com/display/INFINIBOX10/SCSI+Inquiry+Command#SCSIInquiryCommand-6.1INQUIRYPageB2h-logicalblockprovisioning
                  0xb2: {0x00: "Logical block provisioning (sbc3)",
                         0x01: "TapeAlert supported flags (ssc3)"
-                       },
+                        },
                  0xb3: {0x00: "Referrals (sbc3)"
-                       },
+                        },
                  0xc0: "vendor: Firmware numbers (seagate); Unit path report (EMC)",
                  0xc1: "vendor: Date code (seagate)",
                  0xc2: "vendor: Jumper settings (seagate); Software version (RDAC)",
                  0xc3: "vendor: Device behavior (seagate)",
                  0xc9: "Volume Access Control (RDAC)"
-                }
+                 }
 
 # Working Draft SCSI Primary Commands - 4 (SPC-4) - Table 23 (page 45)
 SCSI_CODE_SETS = {0x01: 'Binary', 0x02: 'ASCII', 0x03: 'UTF8'}
@@ -120,10 +134,10 @@ _SCSI_DESIGNATOR_TYPES = {0x00: 'vendor specific [0x0]',
                           0x07: 'MD5 logical unit identifier',
                           0x08: 'SCSI name string',
                           0x09: 'Protocol specific port identifier',
-                          0xa: 'UUID identifier',
-                        }
+                          0x0a: 'UUID identifier',
+                          }
 
-SCSI_DESIGNATOR_TYPES = CustomDefaultDict(lambda i: 'Reserved [%s]'%hex(i), _SCSI_DESIGNATOR_TYPES)
+SCSI_DESIGNATOR_TYPES = CustomDefaultDict(lambda i: 'Reserved [%s]' % hex(i), _SCSI_DESIGNATOR_TYPES)
 
 # Working Draft SCSI Primary Commands - 4 (SPC-4) - Table 530 (page 613)
 SCSI_DESIGNATOR_ASSOCIATIONS = {0x00: 'Addressed logical unit',
@@ -133,22 +147,22 @@ SCSI_DESIGNATOR_ASSOCIATIONS = {0x00: 'Addressed logical unit',
                                 }
 
 # Working Draft SCSI Primary Commands - 4 (SPC-4) - Tables 532- 551 (page 615- 624)
-SCSI_DESIGNATOR_TYPE_OUTPUT = {0x03: {0x02: '''      NAA 2, vendor specific identifier A: {vendor_specific_identifier_a}
-      IEEE Company_id: {ieee_company_id_hex}
-      vendor specific identifier B: {vendor_specific_identifier_b}''',
-                                      0x03: '''      NAA 3, Locally assigned:''',
-                                      0x05: '''      NAA 5, IEEE Company_id: {ieee_company_id_hex}
-      Vendor Specific Identifier: {vendor_specific_identifier}''',
-                                      0x06: '''      NAA 6, IEEE Company_id: {ieee_company_id_hex}
-      Vendor Specific Identifier: {vendor_specific_identifier_hex}
-      Vendor Specific Identifier Extension: {vendor_specific_identifier_extension_hex}
-      [{hex_packed_string}]'''},
-                               0x04: '      Relative target port: {relative_target_port_identifier_hex}',
-                               0x05: '      Target port group: {target_port_group_hex}',
+SCSI_DESIGNATOR_TYPE_OUTPUT = {0x03: {0x02: '      NAA 2, vendor specific identifier A: {vendor_specific_identifier_a}\n' +
+                                            '      IEEE Company_id: {ieee_company_id}\n' +
+                                            '      vendor specific identifier B: {vendor_specific_identifier_b}',
+                                      0x03: '      NAA 3, Locally assigned:',
+                                      0x05: '      NAA 5, IEEE Company_id: {ieee_company_id}\n' +
+                                            '      Vendor Specific Identifier: {vendor_specific_identifier}',
+                                      0x06: '      NAA 6, IEEE Company_id: {ieee_company_id}\n' +
+                                            '      Vendor Specific Identifier: {vendor_specific_identifier}\n' +
+                                            '      Vendor Specific Identifier Extension: {vendor_specific_identifier_extension}\n' +
+                                            '      [{packed_string}]'},
+                               0x04: '      Relative target port: {relative_target_port_identifier}',
+                               0x05: '      Target port group: {target_port_group}',
                                0x06: '      Logical unit group: {logical_group}',
                                0x07: '      MD5 logical unit identifier:\n{md5_logical_identifier}',
                                0x08: '      SCSI name string:\n{scsi_name_string}',
-                               0xa: '      Locally assigned UUID: {assigned_uuid}',
+                               0x0a: '      Locally assigned UUID: {assigned_uuid}',
                                }
 
 SUPPORTED_VPD_PAGES_COMMANDS = {
