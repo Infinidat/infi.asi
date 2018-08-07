@@ -1,6 +1,6 @@
 from __future__ import print_function
 import sys
-from infi.asi import create_platform_command_executer, create_os_file
+from infi.asi import create_platform_command_executer, create_async_os_file
 from infi.asi.cdb.inquiry.standard import StandardInquiryCommand
 from infi.asi.cdb.inquiry import vpd_pages
 from infi.asi.coroutines.sync_adapter import async_wait
@@ -22,7 +22,7 @@ try:
             
     path = sys.argv[1]
 
-    f = create_os_file(path, async=True)
+    f = create_async_os_file(path)
 
     command = available_commands[sys.argv[2]]
 
