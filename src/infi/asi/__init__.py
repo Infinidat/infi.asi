@@ -196,9 +196,7 @@ def create_platform_command_executer(*args, **kwargs):
         raise AsiException("Platform %s is not yet supported." % platform_name)
     return CommandExecuterForPlatform(*args, **kwargs)
 
-def create_os_file(path, async=False):
-    if async:
-        return create_async_os_file(path)
+def create_os_file(path):
     platform_name = get_platform_name()
     if platform_name == 'windows':
         from .win32 import Win32File
