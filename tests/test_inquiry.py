@@ -127,7 +127,7 @@ class DeviceIdentification(TestCase):
         from logging import debug; debug(len(buffer))
         obj = UnitSerialNumberVPDPageBuffer()
         obj.unpack(buffer)
-        self.assertEquals(obj.product_serial_number, '742b0f0000075360000000000000000')
+        self.assertEqual(obj.product_serial_number, '742b0f0000075360000000000000000')
 
 
 class AtaInformation(TestCase):
@@ -216,12 +216,12 @@ class AtaInformation(TestCase):
         from infi.asi.cdb.inquiry.vpd_pages.ata_information import AtaInformationVPDPageBuffer
         obj = AtaInformationVPDPageBuffer()
         obj.unpack(raw_data)
-        self.assertEquals(obj.sat_vendor_identification, 'linux')
-        self.assertEquals(obj.sat_product_identification, 'libata')
-        self.assertEquals(obj.sat_product_revision_level, 'ST6O')
-        self.assertEquals(obj.identify_device.firmware_revision, 'ST6OA3AA')
-        self.assertEquals(obj.identify_device.serial_number, '      STR607MS2APNLS')
-        self.assertEquals(obj.identify_device.model_number, 'Hitachi HDE721010SLA330')
+        self.assertEqual(obj.sat_vendor_identification, 'linux')
+        self.assertEqual(obj.sat_product_identification, 'libata')
+        self.assertEqual(obj.sat_product_revision_level, 'ST6O')
+        self.assertEqual(obj.identify_device.firmware_revision, 'ST6OA3AA')
+        self.assertEqual(obj.identify_device.serial_number, '      STR607MS2APNLS')
+        self.assertEqual(obj.identify_device.model_number, 'Hitachi HDE721010SLA330')
 
 
     def test__ata_information_2(self):
@@ -309,9 +309,9 @@ class AtaInformation(TestCase):
         from infi.asi.cdb.inquiry.vpd_pages.ata_information import AtaInformationVPDPageBuffer
         obj = AtaInformationVPDPageBuffer()
         obj.unpack(raw_data)
-        self.assertEquals(obj.sat_vendor_identification, 'LSI')
-        self.assertEquals(obj.sat_product_identification, 'LSISS25x0')
-        self.assertEquals(obj.sat_product_revision_level, '0000')
-        self.assertEquals(obj.identify_device.firmware_revision, 'JP4OA3EA')
-        self.assertEquals(obj.identify_device.serial_number, '      JPW9K0HD26WMHL')
-        self.assertEquals(obj.identify_device.model_number, 'Hitachi HUA722010CLA330')
+        self.assertEqual(obj.sat_vendor_identification, 'LSI')
+        self.assertEqual(obj.sat_product_identification, 'LSISS25x0')
+        self.assertEqual(obj.sat_product_revision_level, '0000')
+        self.assertEqual(obj.identify_device.firmware_revision, 'JP4OA3EA')
+        self.assertEqual(obj.identify_device.serial_number, '      JPW9K0HD26WMHL')
+        self.assertEqual(obj.identify_device.model_number, 'Hitachi HUA722010CLA330')

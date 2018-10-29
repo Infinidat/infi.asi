@@ -86,10 +86,10 @@ BOOL WINAPI CloseHandle(
 """
 CloseHandle = kernel32.CloseHandle
 
-GENERIC_READ = 0x80000000L
-GENERIC_WRITE = 0x40000000L
-GENERIC_EXECUTE = 0x20000000L
-GENERIC_ALL = 0x10000000L
+GENERIC_READ = 0x80000000
+GENERIC_WRITE = 0x40000000
+GENERIC_EXECUTE = 0x20000000
+GENERIC_ALL = 0x10000000
 
 FILE_SHARE_READ = 0x00000001
 FILE_SHARE_WRITE = 0x00000002
@@ -102,7 +102,7 @@ OPEN_EXISTING = 3
 OPEN_ALWAYS = 4
 TRUNCATE_EXISTING = 5
 
-FILE_FLAG_OVERLAPPED = 0x40000000L
+FILE_FLAG_OVERLAPPED = 0x40000000
 
 IOCTL_ACCESS = GENERIC_READ | GENERIC_WRITE
 IOCTL_SHARE = FILE_SHARE_READ | FILE_SHARE_WRITE
@@ -112,7 +112,7 @@ class Win32File(OSFile):
 
     def __init__(self, path, access=IOCTL_ACCESS, share=IOCTL_SHARE,
                  creation_disposition=IOCTL_CREATION, flags=0):
-        self.path = unicode(path)
+        self.path = six.text_type(path)
         self.handle = CreateFile(self.path, access, share, None, creation_disposition, flags, None)
         if self.handle == -1:
             raise AsiWin32OSError(GetLastError(), "CreateFile for path %s failed" % path)
@@ -178,9 +178,9 @@ def WaitForMultipleObjects(events):
 
 class Win32AsyncReactor(OSAsyncReactor):
     def _wait_for_events(self, coroutines):
-        events = {coroutine.get_result().event: (command, coroutine) for (command, coroutine) in coroutines.iteritems()}
-        returned_event_index = WaitForMultipleObjects(events.keys())
-        returned_event = events.keys()[returned_event_index]
+        events = {coroutine.get_result().event: (command, coroutine) for (command, coroutine) in coroutines.items()}
+        returned_event_index = WaitForMultipleObjects(list(events.keys()))
+        returned_event = list(events.keys())[returned_event_index]
         command, coroutine = events[returned_event]
         coroutine.async_io_complete()
         return [command]
@@ -260,7 +260,7 @@ typedef struct _SCSI_PASS_THROUGH_DIRECT {
 // So, IOCTL_SCSI_PASS_THROUGH_DIRECT is:
 // (IOCTL_SCSI_BASE << 16) | (0x0001 | 0x0002) << 14 | (0x0405 << 2) | 0 = 0x0004D014
 """
-IOCTL_SCSI_PASS_THROUGH_DIRECT = 0x0004D014L
+IOCTL_SCSI_PASS_THROUGH_DIRECT = 0x0004D014
 
 SCSI_IOCTL_DATA_OUT = 0 # Write data to the device
 SCSI_IOCTL_DATA_IN = 1 # Read data from the device
@@ -336,7 +336,7 @@ class SCSIPassThroughDirect(Structure):
         spt.SenseInfoLength = SENSE_SIZE
         spt.TimeOutValue = 10 # TODO: configurable
         spt.SenseInfoOffset = sizeof(SCSIPassThroughDirect) - SENSE_SIZE
-        for i in xrange(len(command.command)):
+        for i in range(len(command.command)):
             spt.Cdb[i] = ord(command.command[i])
 
         if isinstance(command, SCSIReadCommand):

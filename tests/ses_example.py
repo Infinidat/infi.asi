@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     try:
         if sys.argv[2] not in available_commands:
-            raise ValueError("available commands: %s" % repr(available_commands.keys()))
+            raise ValueError("available commands: %s" % repr(list(available_commands.keys())))
 
         data = doit(sys.argv[1], sys.argv[2])
         print(repr(data))

@@ -215,7 +215,7 @@ Supported diagnostic pages (0x0):
         obj.unpack(buffer)
         pages = [0x0, 0x1, 0x2, 0x4, 0x5, 0x7, 0xa, 0xe, 0x80]
         print(obj.supported_pages)
-        self.assertEquals(obj.supported_pages, pages)
+        self.assertEqual(obj.supported_pages, pages)
 
     def test__vendor0x80_page(self):
         """
@@ -230,7 +230,7 @@ Cannot decode response from diagnostic page: <unknown>
         obj = Vendor0x80DiagnosticPagesData(None)
         obj.unpack(buffer)
         print(obj.vendor_specific)
-        self.assertEquals(obj.vendor_specific[4], 0x05)
+        self.assertEqual(obj.vendor_specific[4], 0x05)
 
     def test_configuration_diagnostics_page(self):
         """
@@ -273,9 +273,9 @@ Configuration diagnostic page (0x01):
         raw = SES_CONFIGURATION_PAGE_SAMPLE
         page = ConfigurationDiagnosticPagesData(None)
         page.unpack(raw)
-        self.assertEquals(len(page.enclosure_descriptor_list), 1)
-        self.assertEquals(len(page.type_descriptor_header_list), 8)
-        self.assertEquals(len(page.type_descriptor_text_list), 8)
+        self.assertEqual(len(page.enclosure_descriptor_list), 1)
+        self.assertEqual(len(page.type_descriptor_header_list), 8)
+        self.assertEqual(len(page.type_descriptor_text_list), 8)
         #print(page)
         return page
 
@@ -317,9 +317,9 @@ Enclosure Status diagnostic page:
         raw = SES_ENCL_STATUS_PAGE_SAMPLE
         status_page = EnclosureStatusDiagnosticPagesData(config_page)
         status_page.unpack(raw)
-        self.assertEquals(len(status_page.status_descriptors), len(config_page.type_descriptor_header_list))
+        self.assertEqual(len(status_page.status_descriptors), len(config_page.type_descriptor_header_list))
         for idx in range(len(config_page.type_descriptor_header_list)):
-            self.assertEquals(len(status_page.status_descriptors[idx].individual_elements),
+            self.assertEqual(len(status_page.status_descriptors[idx].individual_elements),
                               config_page.type_descriptor_header_list[idx].possible_elements_num)
             print("{!r} has {!r} elements".format(config_page.type_descriptor_header_list[idx].element_type,
                                                   len(status_page.status_descriptors[idx].individual_elements)))
@@ -381,9 +381,9 @@ Element Descriptor In diagnostic page:
         raw = SES_ELEMENT_DESCR_PAGE_SAMPLE
         descr_page = ElementDescriptorDiagnosticPagesData(config_page)
         descr_page.unpack(raw)
-        self.assertEquals(len(descr_page.element_descriptors), len(config_page.type_descriptor_header_list))
+        self.assertEqual(len(descr_page.element_descriptors), len(config_page.type_descriptor_header_list))
         for idx in range(len(config_page.type_descriptor_header_list)):
-            self.assertEquals(len(descr_page.element_descriptors[idx].individual_elements),
+            self.assertEqual(len(descr_page.element_descriptors[idx].individual_elements),
                               config_page.type_descriptor_header_list[idx].possible_elements_num)
             print("{!r} has {!r} elements".format(config_page.type_descriptor_header_list[idx].element_type,
                                                   len(descr_page.element_descriptors[idx].individual_elements)))

@@ -44,11 +44,11 @@ class StandardInquiryTestCase(TestCase):
             "00 00 00 00")
         data = StandardInquiryDataBuffer()
         data.unpack(raw_data)
-        self.assertEquals(data.additional_length, 0x9f)
-        self.assertEquals(data.t10_vendor_identification, "ATA")
-        self.assertEquals(data.product_identification, "Hitachi HDP72505")
-        self.assertEquals(data.product_revision_level, "A5CA")
-        self.assertEquals(data.extended.version_descriptors,
+        self.assertEqual(data.additional_length, 0x9f)
+        self.assertEqual(data.t10_vendor_identification, "ATA")
+        self.assertEqual(data.product_identification, "Hitachi HDP72505")
+        self.assertEqual(data.product_revision_level, "A5CA")
+        self.assertEqual(data.extended.version_descriptors,
                           [0x0060, 0x1ec0, 0x0300, 0x04c0, 0x0c00, 0xc20, 0x1600, 0x1623])
 
 
@@ -89,4 +89,4 @@ class StandardInquiryTestCase(TestCase):
             "0d 00 03 02 1f 00 40 00  53 41 53 20 45 20 20 20" +
             "78 32 38 2d 30 35 2e 37  35 2e 42 30 30 32 20 20" +
             "30 30 30 20")
-        self.assertEquals(raw_data, packed_data)
+        self.assertEqual(raw_data, packed_data)

@@ -11,7 +11,7 @@ from infi.instruct.buffer import *
 
 
 if sys.version_info[0] == 2:
-    from cStringIO import StringIO
+    from io import StringIO
 else:
     from io import StringIO
 

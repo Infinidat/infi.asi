@@ -16,7 +16,7 @@ def errno_message(errno):
 
 SENSE_SIZE = 0x12
 
-IOCTL_SCSI_PASS_THROUGH_DIRECT = 0x0004D014L
+IOCTL_SCSI_PASS_THROUGH_DIRECT = 0x0004D014
 
 SCSI_IOCTL_DATA_OUT         = 0 # Write data to the device
 SCSI_IOCTL_DATA_IN          = 1 # Read data from the device
@@ -81,7 +81,7 @@ try:
     spt.TimeOutValue = 10
     spt.DataBuffer = cast(data_buffer, c_void_p)
     spt.SenseInfoOffset = sizeof(SCSIPassThroughDirect) - SENSE_SIZE
-    for i in xrange(len(cmd_str)):
+    for i in range(len(cmd_str)):
         spt.Cdb[i] = ord(cmd_str[i])
 
     bytes_returned = c_ulong()

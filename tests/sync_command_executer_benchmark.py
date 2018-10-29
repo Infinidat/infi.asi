@@ -19,7 +19,7 @@ try:
 
     iters = 1000
     start_time = time.clock()
-    for i in xrange(iters):
+    for i in range(iters):
         inquiry = StandardInquiryCommand()
         data = sync_wait(inquiry.execute(executer))
     duration = time.clock() - start_time
