@@ -112,6 +112,7 @@ class Win32File(OSFile):
 
     def __init__(self, path, access=IOCTL_ACCESS, share=IOCTL_SHARE,
                  creation_disposition=IOCTL_CREATION, flags=0):
+        import six
         self.path = six.text_type(path)
         self.handle = CreateFile(self.path, access, share, None, creation_disposition, flags, None)
         if self.handle == -1:
