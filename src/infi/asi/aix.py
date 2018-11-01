@@ -4,7 +4,6 @@ from .linux import prettify_status, SENSE_SIZE
 from .errors import AsiSCSIError, AsiOSError
 from ctypes import *
 from logging import getLogger
-from fcntl import ioctl
 
 logger = getLogger(__name__)
 
@@ -351,6 +350,7 @@ class AixCommandExecuter(CommandExecuterBase):
         return sc_passthru.create(packet_index, self.io, command, self.timeout)
 
     def _os_send(self, os_data):
+        from fcntl import ioctl
         try:
             gevent_friendly(ioctl)(self.io.fd, DK_PASSTHRU, addressof(os_data))
         except IOError:

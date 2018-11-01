@@ -4,7 +4,6 @@ from . import gevent_friendly
 from .errors import AsiSCSIError, AsiRequestQueueFullError
 from ctypes import *
 from logging import getLogger
-from fcntl import ioctl
 
 logger = getLogger(__name__)
 
@@ -195,6 +194,7 @@ class SolarisCommandExecuter(CommandExecuterBase):
         return SCSICMD.create(packet_index, command, self.timeout)
 
     def _os_send(self, os_data):
+        from fcntl import ioctl
         self.buffer = os_data.to_raw()
         # IMPORTANT: we must pass a ctypes string for the ioctl, and not just a
         # string, otherwise the ioctl won't be able to modify relevant status
