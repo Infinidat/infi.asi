@@ -3,6 +3,7 @@ from . import CommandExecuterBase, DEFAULT_MAX_QUEUE_SIZE, SCSIReadCommand, SCSI
 from .errors import AsiOSError, AsiSCSIError
 from . import OSAsyncIOToken, OSFile, OSAsyncFile, OSAsyncReactor, DEFAULT_TIMEOUT, gevent_friendly
 from .coroutines.sync_adapter import AsyncCoroutine
+import six
 
 # Taken from Windows DDK
 # WinDDK/7600.16385.1/inc/ddk/scsi.h
@@ -338,7 +339,7 @@ class SCSIPassThroughDirect(Structure):
         spt.TimeOutValue = 10 # TODO: configurable
         spt.SenseInfoOffset = sizeof(SCSIPassThroughDirect) - SENSE_SIZE
         for i in range(len(command.command)):
-            spt.Cdb[i] = ord(command.command[i])
+            spt.Cdb[i] = six.indexbytes(command.command, i)  # ord(command.command[i])
 
         if isinstance(command, SCSIReadCommand):
             if command.max_response_length > 0:

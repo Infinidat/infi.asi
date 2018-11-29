@@ -4,6 +4,7 @@ from .linux import prettify_status, SENSE_SIZE
 from .errors import AsiSCSIError, AsiOSError
 from ctypes import *
 from logging import getLogger
+import six
 
 logger = getLogger(__name__)
 
@@ -287,7 +288,7 @@ class sc_passthru(Structure):
         for i in range(SC_PASSTHRU_CDB_LEN):
             self.scsi_cdb[i] = 0
         for i in range(min(SC_PASSTHRU_CDB_LEN, len(command))):
-            self.scsi_cdb[i] = ord(command[i])
+            self.scsi_cdb[i] = six.indexbytes(command, i)  # ord(command[i])
         self.command_length = len(command)
 
     def set_data_buffer(self, buf):

@@ -4,6 +4,7 @@ from infi.asi.cdb.inquiry.standard import StandardInquiryCommand
 from infi.exceptools import print_exc
 from ctypes import *
 from binascii import hexlify
+import six
 
 DeviceIoControl = windll.kernel32.DeviceIoControl
 GetLastError = windll.kernel32.GetLastError
@@ -82,7 +83,7 @@ try:
     spt.DataBuffer = cast(data_buffer, c_void_p)
     spt.SenseInfoOffset = sizeof(SCSIPassThroughDirect) - SENSE_SIZE
     for i in range(len(cmd_str)):
-        spt.Cdb[i] = ord(cmd_str[i])
+        spt.Cdb[i] = six.indexbytes(cmd_str, i)  # ord(cmd_str[i])
 
     bytes_returned = c_ulong()
     print("SCSI status before: %x" % spt.ScsiStatus)
