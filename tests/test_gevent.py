@@ -16,10 +16,10 @@ def a_generator():
 class GeventFriendlyTestCase(TestCase):
     def test_simple_function(self):
         with patch.object(asi, "_gevent_friendly_sleep") as _gevent_friendly_sleep:
-            self.assertEquals(simple_function(), 1)
+            self.assertEqual(simple_function(), 1)
         self.assertTrue(_gevent_friendly_sleep.called)
 
     def test_inside_generator(self):
         with patch.object(asi, "_gevent_friendly_sleep") as _gevent_friendly_sleep:
-            self.assertEquals(list(a_generator()), [0, 1])
-        self.assertEquals(_gevent_friendly_sleep.call_count, 2)
+            self.assertEqual(list(a_generator()), [0, 1])
+        self.assertEqual(_gevent_friendly_sleep.call_count, 2)

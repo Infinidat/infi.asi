@@ -277,7 +277,6 @@ class LinuxCommandExecuter(CommandExecuterBase):
         raw = yield gevent_friendly(self.io.read)(SGIO.sizeof())
         yield self._handle_raw_response(raw)
 
-from fcntl import ioctl
 SG_IO = 0x2285
 
 
@@ -288,6 +287,7 @@ class LinuxIoctlCommandExecuter(LinuxCommandExecuter):
         self.timeout = timeout
 
     def _os_send(self, os_data):
+        from fcntl import ioctl
         self.buffer = os_data.to_raw()
         gevent_friendly(ioctl)(self.io.fd, SG_IO, self.buffer)
         yield len(self.buffer)

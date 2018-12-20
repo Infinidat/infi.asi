@@ -4,8 +4,6 @@ from . import gevent_friendly
 from .errors import AsiSCSIError, AsiRequestQueueFullError
 from ctypes import *
 from logging import getLogger
-from fcntl import ioctl
-from struct import pack, unpack
 
 logger = getLogger(__name__)
 
@@ -196,6 +194,7 @@ class SolarisCommandExecuter(CommandExecuterBase):
         return SCSICMD.create(packet_index, command, self.timeout)
 
     def _os_send(self, os_data):
+        from fcntl import ioctl
         self.buffer = os_data.to_raw()
         # IMPORTANT: we must pass a ctypes string for the ioctl, and not just a
         # string, otherwise the ioctl won't be able to modify relevant status
@@ -210,9 +209,8 @@ class SolarisCommandExecuter(CommandExecuterBase):
 
         packet_id = 0
         request_cmd = self._get_os_data(packet_id)
-        response_status = pack("<h", response_cmd.uscsi_status)
-        response_status_code = unpack("b", response_status[0])[0]
-        response_reason_code = unpack("b", response_status[1])[0]
+        response_status_code = response_cmd.uscsi_status & 0xFF
+        response_reason_code = (response_cmd.uscsi_status << 8) & 0xFF
 
         if response_status_code & SCSI_STATUS_CODES['SCSI_STATUS_CHECK_CONDITION']:
             logger.debug("response_cmd.status = 0x{:x}".format(response_cmd.uscsi_status))

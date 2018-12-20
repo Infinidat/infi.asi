@@ -20,7 +20,7 @@ try:
     }
 
     if sys.argv[2] not in available_commands:
-        raise ValueError("available commands: %s" % repr(available_commands.keys()))
+        raise ValueError("available commands: %s" % repr(list(available_commands.keys())))
 
     path = sys.argv[1]
 
