@@ -58,6 +58,8 @@ class TargetPortDescriptor(Buffer):
     relative_target_port_identifier = be_uint_field(where=bytes_ref[2:4])
 
 class TargetPortGroupDescriptor(Buffer):
+    # SPC4-R37.pdf p. 481
+
     asymetric_access_state = be_int_field(where=bytes_ref[0].bits[0:4])
     pref = be_int_field(where=bytes_ref[0].bits[7])
     ao_sup = be_int_field(where=bytes_ref[1].bits[0])
@@ -65,11 +67,11 @@ class TargetPortGroupDescriptor(Buffer):
     s_sup = be_int_field(where=bytes_ref[1].bits[2])
     u_sup = be_int_field(where=bytes_ref[1].bits[3])
     lbd_sup = be_int_field(where=bytes_ref[1].bits[4])
-    #ao_sup = be_int_field(where=bytes_ref[1].bits[5])
     o_sup = be_int_field(where=bytes_ref[1].bits[6])
     t_sup = be_int_field(where=bytes_ref[1].bits[7])
 
     target_port_group = be_uint_field(where=bytes_ref[2:4])
+    status_code = be_int_field(where=bytes_ref[5])
 
     target_port_count = be_int_field(where=bytes_ref[7])
     target_port_list = list_field(type=TargetPortDescriptor, where=bytes_ref[8:], n=target_port_count)
