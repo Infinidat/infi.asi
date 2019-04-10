@@ -377,9 +377,9 @@ class Win32CommandExecuter(CommandExecuterBase):
         if spt.ScsiStatus != 0:
             if spt.ScsiStatus == SCSISTAT_CHECK_CONDITION:
                 yield (self._check_condition(string_at(spt.sense_buffer, SENSE_SIZE)), spt.packet_id)
-                raise StopIteration()
+                return
             yield (AsiSCSIError("SCSI response status is not zero: %d" % (spt.ScsiStatus,)), spt.packet_id)
-            raise StopIteration()
+            return
         data = None
         if spt.DataIn == SCSI_IOCTL_DATA_IN and spt.DataTransferLength != 0:
             data = spt.data_buffer.raw[0:spt.DataTransferLength]
