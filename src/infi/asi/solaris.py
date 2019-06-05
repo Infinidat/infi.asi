@@ -215,18 +215,15 @@ class SolarisCommandExecuter(CommandExecuterBase):
         if response_status_code & SCSI_STATUS_CODES['SCSI_STATUS_CHECK_CONDITION']:
             logger.debug("response_cmd.status = 0x{:x}".format(response_cmd.uscsi_status))
             return (self._check_condition(string_at(response_cmd.uscsi_rqbuf, SENSE_SIZE)), packet_id)
-            raise StopIteration()
 
         if response_status_code != 0:
             return (AsiSCSIError(("SCSI response status is not zero: 0x%02x " +
                                  "(SCSI reason: 0x%02x)") %
                                 (response_status_code, response_reason_code)), packet_id)
-            raise StopIteration()
 
         if response_cmd.uscsi_rqstatus != 0:
             return (AsiSCSIError("SCSI request commmand status is not zero: 0x%02x" %
                                 (response_cmd.uscsi_rqstatus)), packet_id)
-            raise StopIteration()
 
         data = None
         if request_cmd.uscsi_flags & USCSI_READ and request_cmd.uscsi_buflen != 0:

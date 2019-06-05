@@ -375,15 +375,11 @@ class AixCommandExecuter(CommandExecuterBase):
                 scsi_status = response_cmd.scsi_bus_status & SCSI_STATUS_MASK
                 if (scsi_status & SCSI_STATUS_CODES['SCSI_STATUS_CHECK_CONDITION']) != 0:
                     return (self._check_condition(string_at(response_cmd.autosense_buffer_ptr, SENSE_SIZE)), packet_id)
-                    raise StopIteration()
                 return (AixAsiSCSIError("SCSI bus response status is not zero", response_cmd), packet_id)
-                raise StopIteration()
             elif response_cmd.status_validity == STATUS_VALIDITY_CODES['SC_ADAPTER_ERROR']:
                 return (AixAsiSCSIError("SCSI adapter response status is not zero", response_cmd), packet_id)
-                raise StopIteration()
             else:
                 return (AixAsiSCSIError("SCSI response status validity unknown", response_cmd), packet_id)
-                raise StopIteration()
 
         data = None
         if request_cmd.flags & B_READ and request_cmd.data_length != 0:

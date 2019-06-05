@@ -236,7 +236,6 @@ class LinuxCommandExecuter(CommandExecuterBase):
             logger.debug("response_sgio.status = 0x{:x}".format(response_sgio.status))
             logger.debug("response_sgio.driver_status = 0x{:x}".format(response_sgio.driver_status))
             return (self._check_condition(string_at(response_sgio.sbp, SENSE_SIZE)), packet_id)
-            raise StopIteration()
 
         if response_sgio.status != 0:
             if response_sgio.host_status == 0x07:
@@ -249,14 +248,12 @@ class LinuxCommandExecuter(CommandExecuterBase):
                                   prettify_status(response_sgio.driver_status & 0x0f, DRIVER_STATUS_CODES),
                                   prettify_status(response_sgio.host_status, HOST_STATUS_CODES)))
             return (error, packet_id)
-            raise StopIteration()
 
         if (response_sgio.driver_status & 0x0F) != 0:
             error = AsiSCSIError("SCSI driver response status is not zero: %s (host status: %s)" %
                                 (prettify_status(response_sgio.status, SCSI_STATUS_CODES),
                                  prettify_status(response_sgio.driver_status & 0x0f, DRIVER_STATUS_CODES)))
             return (error, packet_id)
-            raise StopIteration()
 
         if response_sgio.host_status != 0:
             error = AsiSCSIError(("SCSI host status is not zero: %s" +
@@ -265,7 +262,6 @@ class LinuxCommandExecuter(CommandExecuterBase):
                                   prettify_status(response_sgio.driver_status & 0x0f, DRIVER_STATUS_CODES),
                                   prettify_status(response_sgio.host_status, HOST_STATUS_CODES)))
             return (error, packet_id)
-            raise StopIteration()
 
         data = None
         if request_sgio.dxfer_direction == SG_DXFER_FROM_DEV and request_sgio.dxfer_len != 0:
