@@ -341,6 +341,25 @@ class sc_passthru(Structure):
     def sizeof(cls):
         return sizeof(cls)
 
+def get_ioctl_function():
+    # fcntl.ioctl doesn't support arguments above 32-bit, but we pass
+    # a pointer to ioctl which, in 64-bit mode, may be a 64-bit value -
+    # so we try to load the function using ctypes if possible
+    import ctypes
+    try:
+        # this will only work on 64-bit Python and only
+        # on Python >= 3.7 (bpo-26439)
+        libc = ctypes.CDLL("libc.a(shr_64.o)")
+    except OSError:  # Could not load module
+        # use fcntl
+        import fcntl
+        return fcntl.ioctl
+    else:
+        ioctl = libc.ioctl
+        ioctl.restype = ctypes.c_int
+        ioctl.argtypes = (ctypes.c_int, ctypes.c_int, ctypes.c_void_p)
+        return ioctl
+
 class AixCommandExecuter(CommandExecuterBase):
     def __init__(self, io, max_queue_size=1, timeout=DEFAULT_TIMEOUT_IN_SEC):
         super(AixCommandExecuter, self).__init__(max_queue_size)
@@ -351,9 +370,9 @@ class AixCommandExecuter(CommandExecuterBase):
         return sc_passthru.create(packet_index, self.io, command, self.timeout)
 
     def _os_send(self, os_data):
-        from fcntl import ioctl
         try:
-            gevent_friendly(ioctl)(self.io.fd, DK_PASSTHRU, addressof(os_data))
+            ioctl = gevent_friendly(get_ioctl_function())
+            ioctl(self.io.fd, DK_PASSTHRU, addressof(os_data))
         except IOError:
             if os_data.einval_arg != 0:
                 msg = "ioctl failed, invalid argument: {}"
