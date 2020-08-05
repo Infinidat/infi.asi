@@ -79,7 +79,7 @@ class StandardInquiryTestCase(TestCase):
 
     def test_pack__enclosure_no_extended_data(self):
         data = StandardInquiryDataBuffer(peripheral_device=PeripheralDeviceDataBuffer(qualifier=0, type=13),
-                                         acc=0, additional_length=31, addr16=0, cmd_que=0, enc_serv=1, hisup=0,
+                                         acc=0, cong=0, additional_length=31, addr16=0, cmd_que=0, enc_serv=1, hisup=0,
                                          multi_p=0, normaca=0, product_identification=u'x28-05.75.B002',
                                          product_revision_level=u'000', protect=0,
                                          response_data_format=2, rmb=0, sccs=0, sync=0,
