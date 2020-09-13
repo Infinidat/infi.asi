@@ -38,6 +38,7 @@ class ReportLunsCommand(CDB):
 
         if self.allocation_length >= 16:
             result = ReportLunsData.create_from_string(result_datagram)
+            result.hex_lun_list = [hex(lun) for lun in result.lun_list]
             result.normalize_lun_list(self.allow_unsupported_addressing_format)
         else:
             len_result_datagram = 0 if not result_datagram else len(result_datagram)
