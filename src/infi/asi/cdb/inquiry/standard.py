@@ -37,6 +37,7 @@ class StandardInquiryExtendedDataBuffer(Buffer):
 class StandardInquiryDataBuffer(Buffer):
     peripheral_device = buffer_field(PeripheralDeviceDataBuffer, where=bytes_ref[0])
     # bytes_ref[1].bits[0:7] - reserved
+    cong = uint_field(where=bytes_ref[1].bits[6])
     rmb = uint_field(where=bytes_ref[1].bits[7])
     version = uint_field(where=bytes_ref[2])
     response_data_format = uint_field(where=bytes_ref[3].bits[0:4])
