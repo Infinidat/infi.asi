@@ -20,7 +20,7 @@ build/
 dist/
 
 # buildout
-setup.py
+#setup.py
 .installed*.cfg
 .cache/
 eggs/

@@ -13,7 +13,7 @@ class AsiSCSIError(AsiException):
 
 class AsiCheckConditionError(AsiSCSIError):
     def __init__(self, sense_buffer, sense_obj):
-        super(AsiCheckConditionError, self).__init__("SCSI Check Condition status, sense %s [%s]" %
+        super(AsiCheckConditionError, self).__init__("SCSIIIIIIIIIIIII Check Condition status, sense %s [%s]" %
                                                      (repr(sense_obj), hexlify(sense_buffer)))
         self.sense_buffer = sense_buffer
         self.sense_obj = sense_obj
